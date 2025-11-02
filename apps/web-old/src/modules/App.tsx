@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { useAuthStore } from "@moments/shared";
+import { useAuthStore, supabase } from "@moments/shared";
 import { useEventStore } from "../store/useEventStore";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { Bell } from "lucide-react";
@@ -37,6 +37,38 @@ export function App() {
       localStorage.removeItem("moments-store");
     }
   }, [user, resetStore]);
+
+  // Restore session on mount and react to auth changes
+  useEffect(() => {
+    let isMounted = true;
+
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+        if (!session) {
+          navigate("/login");
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    initAuth();
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        navigate("/");
+      } else {
+        navigate("/login");
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription?.subscription?.unsubscribe?.();
+    };
+  }, [navigate]);
   
   // Close dropdown when clicking outside
   useEffect(() => {

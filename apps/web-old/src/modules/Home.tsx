@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useMemo, useState, useEffect, useRef } from "react";
-import { getCountdown, daysUntil, useAuthStore, supabase } from "@moments/shared";
+import { useMemo, useState, useEffect } from "react";
+import { getCountdown, daysUntil, useAuthStore } from "@moments/shared";
 import { useEventStore } from "../store/useEventStore";
 import { EventCategory } from "@moments/shared";
 import { motion, AnimatePresence } from "framer-motion";
@@ -51,10 +51,7 @@ export function Home() {
   // Dashboard filter state (All / My Moments / Shared with Me)
   const [momentFilter, setMomentFilter] = useState<"all" | "mine" | "shared">("all");
   
-  // Notifications state
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const notificationsRef = useRef<HTMLDivElement>(null);
+  // Notifications are now handled in the top bar (App.tsx)
   
   // ✅ Fetch moments and tasks right after login
   useEffect(() => {
@@ -89,137 +86,7 @@ export function Home() {
     }
   }, [user?.id, moments.length, tasks.length, loading, fetchTasks]);
   
-  // ✅ Fetch notifications when user is logged in
-  useEffect(() => {
-    if (!user?.email || !supabase?.from) return;
-    
-    const fetchNotifications = async () => {
-      if (!supabase?.from) return;
-      try {
-        const normalizedEmail = user.email.toLowerCase().trim();
-        console.log("[Home] Fetching notifications for:", normalizedEmail);
-        
-        const { data, error } = await supabase
-          .from("notifications")
-          .select("*")
-          .eq("recipient", normalizedEmail)
-          .order("created_at", { ascending: false })
-          .limit(20);
-        
-        if (error) {
-          console.error("[Home] Error fetching notifications:", error);
-          console.error("[Home] Error details:", {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint
-          });
-          return;
-        }
-        
-        console.log("[Home] Fetched notifications:", data?.length || 0, "notifications");
-        console.log("[Home] Notifications data:", data);
-        setNotifications(data || []);
-      } catch (err) {
-        console.error("[Home] Unexpected error fetching notifications:", err);
-      }
-    };
-    
-    // Fetch immediately and set up polling + realtime
-    fetchNotifications();
-    
-    // Also poll periodically in case realtime misses something
-    const pollInterval = setInterval(() => {
-      fetchNotifications();
-    }, 10000); // Poll every 10 seconds
-    
-    // Set up realtime subscription for new notifications
-    let channel: any = null;
-    if (supabase?.channel) {
-      const normalizedEmail = user.email.toLowerCase().trim();
-      console.log("[Home] Setting up realtime subscription for:", normalizedEmail);
-      
-      channel = supabase
-        .channel(`notifications-${normalizedEmail.replace(/[^a-z0-9]/g, '-')}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "notifications"
-          },
-          (payload: any) => {
-            console.log("[Home] Realtime notification received:", payload);
-            const newNotification = payload.new;
-            // Check if notification is for this user
-            if (newNotification?.recipient?.toLowerCase().trim() === normalizedEmail) {
-              console.log("[Home] ✅ New notification is for current user, refetching...");
-              fetchNotifications();
-            } else {
-              console.log("[Home] ⚠️ Notification is for different user:", newNotification?.recipient, "expected:", normalizedEmail);
-            }
-          }
-        )
-        .subscribe((status: string, err?: any) => {
-          console.log("[Home] Notification subscription status:", status);
-          if (err) {
-            console.error("[Home] Subscription error:", err);
-          }
-          if (status === "SUBSCRIBED") {
-            console.log("[Home] ✅ Successfully subscribed to notifications");
-          }
-        });
-    } else {
-      console.warn("[Home] Supabase channel not available for realtime subscription");
-    }
-    
-    return () => {
-      clearInterval(pollInterval);
-      if (supabase && channel) {
-        console.log("[Home] Cleaning up notification subscription");
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [user?.email, supabase]);
-  
-  // Close notifications dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
-    };
-    
-    if (showNotifications) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [showNotifications]);
-  
-  // Mark notification as read when clicked
-  const handleNotificationClick = async (notification: any) => {
-    if (!supabase?.from || notification.read) return;
-    
-    try {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("id", notification.id);
-      
-      if (!error) {
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
-        );
-      }
-    } catch (err) {
-      console.error("[Home] Error marking notification as read:", err);
-    }
-    
-    setShowNotifications(false);
-    if (notification.link) {
-      navigate(notification.link);
-    }
-  };
+  // (Removed local bell + dropdown; top bar will host notifications)
   
   // Category filter state
   const categories = ['all', 'work', 'travel', 'birthday', 'education', 'personal'];
@@ -299,8 +166,7 @@ export function Home() {
     ? filteredByOwnership
     : filteredByOwnership.filter(e => e.category === filter);
   
-  // Unread notifications count
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // Unread notifications now handled in App-level UI
 
   const filteredTasks = upcomingTasks.filter((t: any) => {
     const matchesCategory = filter === 'all' || t.eventCategory === filter;
@@ -350,8 +216,8 @@ export function Home() {
           Treasure your memories. Plan your next adventures.
         </p>
       </motion.div>
-      {/* Header with Notifications and Dashboard Filters */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+      {/* Header Filters */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
         {/* Dashboard Filters */}
         <div className="flex gap-2">
           <button
@@ -386,101 +252,7 @@ export function Home() {
           </button>
         </div>
         
-        {/* Notifications Bell */}
-        {user && (
-          <div className="relative" ref={notificationsRef}>
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-              aria-label="Notifications"
-            >
-              <Bell className="w-6 h-6" />
-              {unreadCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold"
-                >
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </motion.span>
-              )}
-              {/* Debug: Show count even if 0 for testing */}
-              {typeof import.meta !== 'undefined' && (import.meta as any).env?.MODE === 'development' && (
-                <span className="absolute -bottom-6 left-0 text-xs text-gray-400">
-                  Total: {notifications.length}
-                </span>
-              )}
-            </button>
-            
-            {/* Notifications Dropdown */}
-            {showNotifications && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute right-0 top-12 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-[90vw] max-w-sm md:w-80 max-h-96 overflow-hidden z-50"
-              >
-                <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-100">Notifications</h3>
-                  {typeof import.meta !== 'undefined' && (import.meta as any).env?.MODE === 'development' && (
-                    <button
-                      onClick={async () => {
-                        if (!user?.email || !supabase?.from) return;
-                        const normalizedEmail = user.email.toLowerCase().trim();
-                        console.log("[Home] Testing notification fetch for:", normalizedEmail);
-                        const { data, error } = await supabase
-                          .from("notifications")
-                          .select("*")
-                          .eq("recipient", normalizedEmail);
-                        console.log("[Home] Test query result:", { data, error });
-                        alert(`Test query: ${data?.length || 0} notifications found${error ? `\nError: ${error.message}` : ''}`);
-                      }}
-                      className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                      title="Test notification query"
-                    >
-                      Test
-                    </button>
-                  )}
-                </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                      No notifications
-                    </div>
-                  ) : (
-                    notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        onClick={() => handleNotificationClick(n)}
-                        className={`p-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                          !n.read ? "bg-blue-50 dark:bg-blue-900/20" : ""
-                        }`}
-                      >
-                        <p className="text-sm text-gray-800 dark:text-gray-100">{n.message}</p>
-                        {n.link && (
-                          <a
-                            href={n.link}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              navigate(n.link);
-                              setShowNotifications(false);
-                            }}
-                            className="text-blue-600 dark:text-blue-400 hover:underline text-xs mt-1 block"
-                          >
-                            View Moment →
-                          </a>
-                        )}
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {new Date(n.created_at).toLocaleString()}
-                        </p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </div>
-        )}
+        {/* Notifications moved to top bar */}
       </div>
       
       {/* Category Filter Bar */}

@@ -329,7 +329,7 @@ export function Home() {
         <div className="text-center">
           <p className="text-gray-500 dark:text-gray-400 text-lg">Loading moments...</p>
           <div className="mt-4 animate-pulse">
-            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded w-48 mx-auto"></div>
+            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded w-32 sm:w-48 mx-auto"></div>
           </div>
         </div>
       </div>
@@ -418,7 +418,7 @@ export function Home() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute right-0 top-12 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-80 max-h-96 overflow-hidden z-50"
+                className="absolute right-0 top-12 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-[90vw] max-w-sm md:w-80 max-h-96 overflow-hidden z-50"
               >
                 <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-100">Notifications</h3>
@@ -688,7 +688,7 @@ export function Home() {
         <div>
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mt-8 mb-1">
             Preparations
-            <span className="block h-[2px] w-16 bg-indigo-400 dark:bg-indigo-500 mt-2 rounded" />
+            <span className="block h-[2px] w-12 sm:w-16 bg-indigo-400 dark:bg-indigo-500 mt-2 rounded" />
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
             {filter !== 'all' && ` (${filter})`}
@@ -875,7 +875,7 @@ export function Home() {
       {/* Share Modal */}
       {showShare && selectedMoment && (
         <div className="fixed inset-0 bg-black/40 dark:bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-80 shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-sm shadow-lg border border-gray-200 dark:border-gray-700 mx-3">
             <h3 className="font-semibold mb-3 text-lg text-gray-800 dark:text-gray-100">Share this Moment</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
               {selectedMoment.title || selectedMoment.name}

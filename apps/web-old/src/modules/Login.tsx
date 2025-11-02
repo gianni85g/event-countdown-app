@@ -33,7 +33,7 @@ export default function Login() {
     const displayName = user?.user_metadata?.display_name?.trim() || user?.user_metadata?.name?.trim() || user?.email?.split("@")[0] || "User";
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
-        <div className="bg-white p-6 rounded-xl shadow-md w-80 text-center">
+      <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-sm text-center mx-4 sm:mx-0">
           <h1 className="text-xl font-semibold mb-4 text-gray-800">
             Welcome, {displayName}! 👋
           </h1>
@@ -53,7 +53,7 @@ export default function Login() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
-      <div className="bg-white p-6 rounded-xl shadow-md w-80">
+      <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-sm mx-4 sm:mx-0">
         <h1 className="text-xl font-semibold mb-4 text-center text-gray-800">
           {isLogin ? "Welcome back" : "Create your account"}
         </h1>

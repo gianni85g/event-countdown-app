@@ -354,7 +354,7 @@ export function EventDetails() {
       {/* Share Modal (simple) */}
       {showShare && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-4 w-80 shadow">
+          <div className="bg-white rounded-lg p-4 w-full max-w-sm shadow mx-3">
             <h3 className="font-semibold mb-2">Share this Moment</h3>
             <input
               type="email"

@@ -62,7 +62,7 @@ export default function ResetPassword() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
-      <div className="bg-white p-6 rounded-xl shadow-md w-80">
+      <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-sm mx-4 sm:mx-0">
         {stage === "request" && (
           <>
             <h1 className="text-xl font-semibold mb-4 text-center text-gray-800">

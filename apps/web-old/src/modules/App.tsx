@@ -42,7 +42,7 @@ export function App() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900">
       {/* Sticky Header */}
       <header className="sticky top-0 z-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur border-b border-gray-200 dark:border-gray-700 px-3 sm:px-4 py-3 shadow-sm">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <div className="max-w-4xl w-full mx-auto flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
           <Link 
             to="/" 
             className="flex items-center gap-2 group"
@@ -107,7 +107,7 @@ export function App() {
       </header>
       
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6 dark:text-gray-100">
+      <div className="max-w-4xl w-full mx-auto px-4 py-6 dark:text-gray-100">
         <Outlet />
       </div>
     </div>

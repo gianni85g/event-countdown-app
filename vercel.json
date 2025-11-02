@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "web-old",
+  "rootDirectory": "apps/web-old",
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "dist",
+  "framework": "vite"
+}
+
+

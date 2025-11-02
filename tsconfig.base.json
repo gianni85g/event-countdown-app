@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@moments/shared/*": ["packages/shared/src/*"],
+      "@moments/shared": ["packages/shared/src/index"]
+    }
+  }
+}
+

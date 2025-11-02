@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "lib": ["esnext"],        // ✅ ensures no DOM typings leak in
+    "skipLibCheck": true      // ✅ ignores type conflicts from React Native internals
+  },
+  "include": ["src"]
+}

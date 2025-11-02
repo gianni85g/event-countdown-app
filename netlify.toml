@@ -1,0 +1,11 @@
+[build]
+base = "apps/web-old"
+command = "pnpm run build"
+publish = "apps/web-old/dist"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
+

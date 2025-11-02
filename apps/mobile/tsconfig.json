@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-native",
+    "strict": true,
+    "types": ["nativewind/types"],
+    "baseUrl": ".",
+    "paths": {
+      "@moments/shared/*": ["../../packages/shared/src/*"]
+    }
+  },
+  "include": ["App.tsx", "src"]
+}

@@ -125,7 +125,7 @@ export function App() {
       <header className="sticky top-0 z-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur border-b border-gray-200 dark:border-gray-700 px-3 sm:px-4 py-3 shadow-sm">
         <div className="max-w-4xl w-full mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-3">
           {/* Left: Hamburger (mobile) + App name */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <div className="relative" ref={menuRef}>
               <button
                 aria-label="Open menu"
@@ -159,15 +159,15 @@ export function App() {
                 </div>
               )}
             </div>
-            <Link to="/" className="flex items-center gap-2 group">
-              <h1 className="text-xl sm:text-2xl font-semibold text-blue-600 dark:text-blue-400 transition">
+            <Link to="/" className="flex items-center gap-2 group min-w-0">
+              <h1 className="text-lg sm:text-xl font-semibold text-blue-600 dark:text-blue-400 transition truncate max-w-[55vw] sm:max-w-none">
                 My Moments
               </h1>
             </Link>
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
             {/* Desktop menu quick add */}
             <Link
               to="/add"
@@ -176,10 +176,10 @@ export function App() {
               + New
             </Link>
             {/* Notifications */}
-            <div className="relative" ref={notificationsRef}>
+            <div className="relative flex-shrink-0" ref={notificationsRef}>
               <button
                 aria-label="Notifications"
-                className="relative p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                className="relative p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 hover:text-indigo-500 transition-colors duration-200"
                 title="Notifications"
                 onClick={() => setShowNotifications((v) => !v)}
               >
@@ -292,7 +292,7 @@ export function App() {
                 disabled={loggingOut}
                 aria-label="Log out"
                 title="Log out"
-                className={`inline-flex sm:hidden flex-shrink-0 px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 text-xs font-medium transition-all duration-200 active:scale-95 ${
+                className={`inline-flex sm:hidden flex-shrink-0 px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 text-xs font-medium transition-colors duration-200 active:scale-95 ${
                   loggingOut
                     ? "opacity-50 cursor-not-allowed text-gray-400 dark:text-gray-500"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -303,9 +303,9 @@ export function App() {
             )}
             {/* Profile / Account Menu */}
             {user ? (
-              <div className="relative" ref={accountMenuRef}>
+              <div className="relative flex-shrink-0" ref={accountMenuRef}>
                 <button
-                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition px-2 py-1 rounded"
+                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-500 dark:hover:text-blue-400 font-medium transition-colors duration-200 px-2 py-1 rounded"
                   onClick={() => {
                     setAccountMenuOpen((v) => !v);
                     setShowNotifications(false);

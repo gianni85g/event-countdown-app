@@ -286,7 +286,7 @@ export function Home() {
       <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3">
         {momentFilter === "mine" ? "My Moments" : momentFilter === "shared" ? "Shared with Me" : "All Moments"}
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <AnimatePresence>
           {visibleEvents.filter((m)=>!isPast(m)).map((e) => {
           const total = e.tasks.length;
@@ -296,7 +296,7 @@ export function Home() {
           const categoryInfo = getCategoryInfo(e.category);
           
         return (
-            <div key={e.id} className={`rounded-2xl shadow-lg hover:shadow-xl transition-all border border-transparent p-[1px] relative ${
+            <div key={e.id} className={`rounded-2xl shadow-lg hover:shadow-lg transition-shadow duration-200 border border-transparent p-[1px] relative ${
               (e as any).sharedWithMe ? 'bg-gradient-to-r from-indigo-200 to-blue-200' : 'bg-gradient-to-r from-pink-200 to-indigo-200'
             }`}>
               <motion.div
@@ -304,23 +304,19 @@ export function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className={`bg-white dark:bg-gray-800 rounded-2xl p-4 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
+                className={`bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5 h-60 sm:h-64 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
                   (e as any).status === "pending" || (e as any).sharedWithMe ? "opacity-90" : "opacity-100"
                 }`}
               >
-                {isPast(e) && (
-                  <span className="absolute top-2 right-3 text-xs px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded-full">
-                    ⏳ Past Due
-                  </span>
-                )}
                 {(e as any).sharedWithMe && (
-                  <span className="absolute top-2 right-3 text-xs px-2 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 rounded-full">
-                    Shared with you
-                  </span>
+                  <span className="absolute top-3 right-3 text-xs px-2 py-1 bg-indigo-500 text-white rounded-full">Shared with you</span>
+                )}
+                {isPast(e) && (
+                  <span className="absolute top-12 right-3 text-xs px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded-full">⏳ Past Due</span>
                 )}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1 truncate">
                     {categoryInfo.emoji} {e.name || e.title}
                   </h3>
                   <div className="flex items-center gap-2 mb-2">
@@ -344,9 +340,7 @@ export function Home() {
                     </span>
                   </div>
               </div>
-                <div className={`text-sm font-medium ${urgent ? "text-red-600" : "text-gray-600"}`}>
-                {getCountdown(e.date)}
-              </div>
+                <div className={`absolute bottom-4 left-5 text-sm font-medium ${urgent ? "text-red-600" : "text-gray-600"}`}>{getCountdown(e.date)}</div>
             </div>
             {e.description && (
               <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{e.description}</p>

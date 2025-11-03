@@ -49,9 +49,15 @@ export function EditEvent() {
 
   const handleDelete = async () => {
     // Block deletion for shared moments where current user is not the owner
-    if ((event as any)?.user_id && user && (event as any).user_id !== user.id) {
-      setWarningMessage("This moment cannot be canceled because it was shared with you.");
-      return;
+    if (user && event) {
+      const isOwner = (event as any)?.user_id === user.id;
+      const userEmail = user.email?.toLowerCase().trim();
+      const sharedWith = ((event as any)?.shared_with || []) as string[];
+      const includesUser = Array.isArray(sharedWith) && !!userEmail && sharedWith.some((e) => e?.toLowerCase?.().trim?.() === userEmail);
+      if (!isOwner && includesUser) {
+        setWarningMessage("This moment cannot be canceled because it was shared with you.");
+        return;
+      }
     }
     if (window.confirm("Are you sure you want to delete this moment? This action cannot be undone.")) {
       setDeleting(true);

@@ -44,34 +44,19 @@ export function App() {
     }
   }, [user, resetStore]);
 
-  // Restore session on mount and react to auth changes
+  // Restore session and handle redirects with specific auth events
   useEffect(() => {
-    let isMounted = true;
-
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!isMounted) return;
-        if (!session) {
-          navigate("/login");
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    initAuth();
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION") {
+        if (!session) navigate("/login");
+      } else if (event === "SIGNED_IN") {
         navigate("/");
-      } else {
+      } else if (event === "SIGNED_OUT") {
         navigate("/login");
       }
     });
 
     return () => {
-      isMounted = false;
       subscription?.unsubscribe?.();
     };
   }, [navigate]);
@@ -265,7 +250,6 @@ export function App() {
                       } catch {}
                       setMenuOpen(false);
                       setShowNotifications(false);
-                      navigate("/login");
                     } finally {
                       setLoggingOut(false);
                     }

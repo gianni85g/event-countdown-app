@@ -19,6 +19,7 @@ export function App() {
 
   const notifications = useEventStore((s: any) => (s as any).notifications || []);
   const fetchNotifications = useEventStore((s: any) => (s as any).fetchNotifications);
+  const unreadCount = (notifications?.filter?.((n: any) => !n.read)?.length || 0);
 
   // Track user changes and reset store when switching users
   useEffect(() => {
@@ -183,37 +184,36 @@ export function App() {
                 onClick={() => setShowNotifications((v) => !v)}
               >
                 <Bell className="w-5 h-5" />
-                {(notifications?.filter?.((n: any) => !n.read)?.length || 0) > 0 && (
+                {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-                    {Math.min(9, notifications.filter((n: any) => !n.read).length)}
+                    {Math.min(9, unreadCount)}
                   </span>
                 )}
               </button>
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-auto rounded-md shadow-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
+                <div className="absolute right-0 mt-2 w-72 max-w-[90vw] max-h-96 overflow-auto rounded-md shadow-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
                   <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <span className="font-semibold text-sm">Notifications</span>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-500">{notifications.length || 0}</span>
-                      {(notifications?.some?.((n: any) => !n.read)) && (
-                        <button
-                          className="text-xs text-blue-600 hover:underline"
-                          onClick={async () => {
-                            const email = user?.email?.toLowerCase().trim();
-                            if (!email || !supabase) return;
-                            try {
-                              await (supabase as any)
-                                .from("notifications")
-                                .update({ read: true })
-                                .eq("recipient", email);
-                            } catch {}
-                            fetchNotifications?.(email);
-                          }}
-                          title="Mark all as read"
-                        >
-                          Mark all as read
-                        </button>
-                      )}
+                      <button
+                        className={`text-xs ${unreadCount > 0 ? 'text-blue-600 hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
+                        onClick={async () => {
+                          const email = user?.email?.toLowerCase().trim();
+                          if (!email || !supabase || unreadCount === 0) return;
+                          try {
+                            await (supabase as any)
+                              .from("notifications")
+                              .update({ read: true })
+                              .eq("recipient", email);
+                          } catch {}
+                          fetchNotifications?.(email);
+                        }}
+                        title="Mark all as read"
+                        disabled={unreadCount === 0}
+                      >
+                        Mark all as read
+                      </button>
                     </div>
                   </div>
                   <div className="py-1">
@@ -271,13 +271,13 @@ export function App() {
                 disabled={loggingOut}
                 aria-label="Log out"
                 title="Log out"
-                className={`inline-flex sm:hidden px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 text-xs font-medium transition-all duration-200 active:scale-95 ${
+                className={`inline-flex sm:hidden flex-shrink-0 px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 text-xs font-medium transition-all duration-200 active:scale-95 ${
                   loggingOut
                     ? "opacity-50 cursor-not-allowed text-gray-400 dark:text-gray-500"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
-                {loggingOut ? "...” : "Logout"}
+                {loggingOut ? "…" : "Logout"}
               </button>
             )}
             {/* Profile / Account Menu */}

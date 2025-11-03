@@ -66,6 +66,13 @@ export function Home() {
           useEventStore.setState({ events: current.filter((m: any) => m.id !== id) });
         } catch {}
       }
+      // Ensure fresh data after deletion
+      try {
+        const userId = useAuthStore.getState().user?.id;
+        if (userId && typeof fetchMoments === 'function') {
+          await fetchMoments(userId);
+        }
+      } catch {}
     } catch (err) {
       console.error('Failed to delete moment:', err);
     }
@@ -368,14 +375,17 @@ export function Home() {
           const categoryInfo = getCategoryInfo(e.category);
           
         return (
-            <div key={e.id} className={`rounded-2xl shadow-lg hover:shadow-lg transition-shadow duration-200 border border-transparent p-[1px] relative ${
-              (e as any).sharedWithMe ? 'bg-gradient-to-r from-indigo-200 to-blue-200' : 'bg-gradient-to-r from-pink-200 to-indigo-200'
-            }`}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
+            <motion.div
+              key={e.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className={`rounded-2xl shadow-lg hover:shadow-lg transition-shadow duration-200 border border-transparent p-[1px] relative ${
+                (e as any).sharedWithMe ? 'bg-gradient-to-r from-indigo-200 to-blue-200' : 'bg-gradient-to-r from-pink-200 to-indigo-200'
+              }`}
+            >
+              <div
                 className={`bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5 h-60 sm:h-64 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
                   (e as any).status === "pending" || (e as any).sharedWithMe ? "opacity-90" : "opacity-100"
                 }`}
@@ -495,8 +505,8 @@ export function Home() {
                   </button>
                 </div>
               )}
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
           );
         })}
         </AnimatePresence>

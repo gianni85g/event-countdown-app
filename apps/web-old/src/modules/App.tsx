@@ -76,7 +76,7 @@ export function App() {
     };
   }, [navigate]);
   
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside (single listener)
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -86,12 +86,9 @@ export function App() {
         setShowNotifications(false);
       }
     }
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [menuOpen]);
+  }, []);
 
   // Fetch notifications and subscribe to realtime
   useEffect(() => {
@@ -259,6 +256,13 @@ export function App() {
                     setLoggingOut(true);
                     try {
                       await signOut();
+                      // Hard-clear any persisted event data to avoid flicker
+                      try {
+                        resetStore();
+                        if (typeof localStorage !== 'undefined') {
+                          localStorage.removeItem('moments-store');
+                        }
+                      } catch {}
                       setMenuOpen(false);
                       setShowNotifications(false);
                       navigate("/login");

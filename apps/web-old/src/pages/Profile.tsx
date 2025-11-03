@@ -8,14 +8,11 @@ export default function Profile() {
 
   const [name, setName] = useState(user?.user_metadata?.display_name || "");
   const [password, setPassword] = useState("");
-  const [avatar, setAvatar] = useState<File | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState(
-    user?.user_metadata?.avatar_url || ""
-  );
+  const initials = (user?.email?.[0] || "U").toUpperCase();
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
-    if (!name.trim() && !password.trim() && !avatar) {
+    if (!name.trim() && !password.trim()) {
       alert("Please change at least one field.");
       return;
     }
@@ -34,20 +31,7 @@ export default function Profile() {
         updates.display_name = name.trim();
       }
 
-      // ✅ Upload avatar if provided
-      if (avatar) {
-        const fileName = `${user.id}-${Date.now()}.jpg`;
-        const { error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(fileName, avatar, { upsert: true });
-        if (uploadError) throw uploadError;
-
-        const { data: publicData } = supabase.storage
-          .from("avatars")
-          .getPublicUrl(fileName);
-        updates.avatar_url = publicData.publicUrl;
-        setAvatarUrl(publicData.publicUrl);
-      }
+      // Avatar upload disabled in v2 – keeping UI simple
 
       // ✅ Update metadata if any
       if (Object.keys(updates).length > 0) {
@@ -80,22 +64,9 @@ export default function Profile() {
       <h1 className="text-xl font-semibold mb-4 text-center">My Profile</h1>
 
       <div className="flex flex-col items-center gap-3 mb-4">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt="Avatar"
-            className="w-24 h-24 rounded-full object-cover border"
-          />
-        ) : (
-          <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-            No Photo
-          </div>
-        )}
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setAvatar(e.target.files?.[0] || null)}
-        />
+        <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 text-2xl font-semibold border">
+          {initials}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">

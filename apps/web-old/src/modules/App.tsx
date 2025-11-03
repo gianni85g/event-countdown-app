@@ -93,7 +93,7 @@ export function App() {
         <div className="max-w-4xl w-full mx-auto flex items-center justify-between gap-3">
           {/* Left: Hamburger (mobile) + App name */}
           <div className="flex items-center gap-2">
-            <div className="sm:hidden relative" ref={menuRef}>
+            <div className="relative" ref={menuRef}>
               <button
                 aria-label="Open menu"
                 className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -152,17 +152,30 @@ export function App() {
             </button>
             {/* Profile */}
             {user ? (
-              <Link
-                to="/profile"
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition"
-              >
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full border" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs">👤</div>
-                )}
-                <span className="hidden sm:inline">{displayName}</span>
-              </Link>
+              <>
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition"
+                >
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full border" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs">👤</div>
+                  )}
+                  <span className="hidden sm:inline">{displayName}</span>
+                </Link>
+                {/* Visible Logout on desktop */}
+                <button
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/login");
+                  }}
+                  className="hidden sm:inline-flex px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 active:scale-95"
+                  title="Log out"
+                >
+                  Logout
+                </button>
+              </>
             ) : (
               <Link
                 to="/login"

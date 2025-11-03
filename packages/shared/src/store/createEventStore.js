@@ -97,8 +97,8 @@ export function createEventStore(storage) {
                 // Get current user email to check invitation status
                 const { data: userData } = await supabase.auth.getUser();
                 const userEmail = userData?.user?.email?.toLowerCase().trim();
-                // Fetch moments from Supabase
-                const { data, error } = await supabase
+                // Fetch moments owned by the user OR shared_with contains the user's email
+                const query = supabase
                     .from("moments")
                     .select(`
                 *,
@@ -106,6 +106,14 @@ export function createEventStore(storage) {
                 comments (*)
               `)
                     .order("date", { ascending: true });
+                // Apply OR filter when we have the email; otherwise rely on RLS
+                let data, error;
+                if (userEmail) {
+                    ({ data, error } = await query.or(`user_id.eq.${userId},shared_with.cs.{${userEmail}}`));
+                }
+                else {
+                    ({ data, error } = await query);
+                }
                 if (error) {
                     console.error("[fetchMoments] Supabase error:", error);
                     return;
@@ -143,6 +151,7 @@ export function createEventStore(storage) {
                             }
                         }
                         const isPast = new Date(moment.date) < new Date();
+                        const sharedWithMe = !isOwner && isSharedWithUser;
                         return {
                             id: moment.id,
                             name: moment.title,
@@ -157,6 +166,7 @@ export function createEventStore(storage) {
                             reflection: moment.reflection || undefined,
                             reflectionPhoto: moment.reflection_photo || undefined,
                             isPast: moment.is_past ?? isPast,
+                            sharedWithMe,
                             tasks: (moment.preparations || []).map((prep) => ({
                                 id: prep.id,
                                 text: prep.text,
@@ -203,6 +213,26 @@ export function createEventStore(storage) {
             }
             catch (err) {
                 console.error("[fetchMoments] Error fetching moments from Supabase:", err);
+            }
+        },
+        fetchNotifications: async (userEmail) => {
+            if (!userEmail || !supabase?.from)
+                return;
+            try {
+                const normalized = userEmail.toLowerCase().trim();
+                const { data, error } = await supabase
+                    .from("notifications")
+                    .select("*")
+                    .eq("recipient", normalized)
+                    .order("created_at", { ascending: false });
+                if (error) {
+                    console.error("fetchNotifications error:", error);
+                    return;
+                }
+                set((state) => ({ ...state, notifications: data || [] }));
+            }
+            catch (err) {
+                console.error("Unexpected error fetching notifications:", err);
             }
         },
         fetchTasks: async (userId) => {

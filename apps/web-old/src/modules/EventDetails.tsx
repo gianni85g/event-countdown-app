@@ -167,12 +167,12 @@ export function EventDetails() {
   };
 
   return (
-    <div>
-      <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold">
+    <div className="w-full max-w-2xl mx-auto px-4 sm:px-6">
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100">
           {categoryInfo.emoji} {event.name || event.title}
         </h1>
-        <span className="text-gray-600">({countdown})</span>
+        <span className="text-gray-600 dark:text-gray-300">({countdown})</span>
         <Link
           to={`/edit/${event.id}`}
           className="bg-blue-200 hover:bg-blue-300 rounded px-2 py-1 text-sm"
@@ -201,12 +201,12 @@ export function EventDetails() {
       )}
 
       <div className="mt-6">
-        <h2 className="font-semibold mb-2">Preparation Steps</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-gray-800 dark:text-gray-100">Preparation Steps</h2>
         
         {/* Add Task Button */}
         {!showAddTaskForm && (
           <button
-            className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 mb-4"
+            className="px-4 py-2 min-h-[44px] w-full sm:w-auto rounded bg-blue-600 text-white hover:bg-blue-700 mb-4"
             onClick={() => setShowAddTaskForm(true)}
           >
             Add a Preparation Step
@@ -230,7 +230,7 @@ export function EventDetails() {
             const countdownText = daysLeft < 0 ? "⚠️ Past due" : `⏳ ${daysLeft} days left`;
             
             return (
-              <li key={t.id} className="bg-white border rounded p-3">
+              <li key={t.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-3">
                 {editingTaskId === t.id ? (
                   <TaskForm
                     initialValues={t}
@@ -247,7 +247,7 @@ export function EventDetails() {
                 onChange={() => toggleTask(event.id, t.id)}
               />
                       <div className="flex items-center gap-2 flex-1">
-                        <span className={`${(t.completed || t.done) ? "line-through text-gray-500" : ""}`}>
+                        <span className={`${(t.completed || t.done) ? "line-through text-gray-500" : "text-gray-800 dark:text-gray-100"}`}>
                           {t.text || t.title}
                         </span>
                         {t.completionDate && (
@@ -288,7 +288,7 @@ export function EventDetails() {
                         </button>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-600 space-y-1">
+                    <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                       {t.owner && <div>Owner: {t.owner}</div>}
                       {t.completionDate && (
                         <div className="flex items-center gap-2">
@@ -330,7 +330,7 @@ export function EventDetails() {
                 <input type="file" accept="image/*" onChange={handleReflectionPhotoSelect} />
                 <button
                   onClick={handleSaveReflection}
-                  className="px-3 py-1 bg-indigo-500 text-white rounded-md"
+                  className="px-3 py-2 min-h-[40px] bg-indigo-500 text-white rounded-md"
                 >
                   Save Reflection
                 </button>
@@ -354,19 +354,19 @@ export function EventDetails() {
       {/* Share Modal (simple) */}
       {showShare && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-4 w-full max-w-sm shadow mx-3">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-sm shadow mx-3">
             <h3 className="font-semibold mb-2">Share this Moment</h3>
             <input
               type="email"
               value={shareEmail}
               onChange={(e) => setShareEmail(e.target.value)}
               placeholder="Enter collaborator email"
-              className="border rounded w-full px-2 py-1 mb-2"
+              className="border rounded w-full px-3 py-2 mb-3"
             />
             <div className="flex justify-end gap-2">
               <button className="text-gray-600" onClick={() => setShowShare(false)}>Cancel</button>
               <button
-                className="bg-blue-600 text-white rounded px-3 py-1"
+                className="bg-blue-600 text-white rounded px-4 py-2"
                 onClick={async () => {
                   if (!shareEmail.trim()) return;
                   const existing = (event as any).shared_with || [];

@@ -2,7 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./styles.css";
-import { App } from "./modules/App.tsx";
+import { App } from "./modules/App";
 import { Home } from "./modules/Home";
 import { EventDetails } from "./modules/EventDetails";
 import { AddEvent } from "./modules/AddEvent";

@@ -52,8 +52,8 @@ export default function Login() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
-      <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-sm mx-4 sm:mx-0">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 px-4">
+      <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-sm mx-auto">
         <h1 className="text-xl font-semibold mb-4 text-center text-gray-800">
           {isLogin ? "Welcome back" : "Create your account"}
         </h1>
@@ -74,7 +74,7 @@ export default function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="border border-gray-300 px-3 py-2 rounded text-sm"
+            className="border border-gray-300 px-3 py-2 rounded text-sm w-full"
           />
           <input
             type="password"
@@ -82,11 +82,11 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="border border-gray-300 px-3 py-2 rounded text-sm"
+            className="border border-gray-300 px-3 py-2 rounded text-sm w-full"
           />
           <button
             disabled={loading}
-            className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
+            className="bg-blue-500 text-white py-2 min-h-[44px] rounded hover:bg-blue-600 transition w-full"
           >
             {isLogin ? "Sign In" : "Sign Up"}
           </button>

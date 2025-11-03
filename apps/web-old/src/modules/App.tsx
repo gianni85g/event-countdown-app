@@ -14,6 +14,8 @@ export function App() {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationsRef = useRef<HTMLDivElement | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
 
   const notifications = useEventStore((s: any) => (s as any).notifications || []);
   const fetchNotifications = useEventStore((s: any) => (s as any).fetchNotifications);
@@ -70,6 +72,9 @@ export function App() {
       }
       if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
         setShowNotifications(false);
+      }
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -242,12 +247,18 @@ export function App() {
                 </div>
               )}
             </div>
-            {/* Profile */}
+            {/* Profile / Account Menu */}
             {user ? (
-              <>
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition"
+              <div className="relative" ref={accountMenuRef}>
+                <button
+                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition px-2 py-1 rounded"
+                  onClick={() => {
+                    setAccountMenuOpen((v) => !v);
+                    setShowNotifications(false);
+                  }}
+                  aria-haspopup="menu"
+                  aria-expanded={accountMenuOpen}
+                  title="Account menu"
                 >
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full border" />
@@ -255,15 +266,53 @@ export function App() {
                     <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs">👤</div>
                   )}
                   <span className="hidden sm:inline">{displayName}</span>
-                </Link>
-                {/* Visible Logout on desktop */}
+                </button>
+
+                {accountMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-44 rounded-md shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
+                    <Link
+                      to="/profile"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="block px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={async () => {
+                        if (loggingOut) return;
+                        setLoggingOut(true);
+                        try {
+                          await signOut();
+                          try {
+                            resetStore();
+                            if (typeof localStorage !== 'undefined') {
+                              localStorage.removeItem('moments-store');
+                            }
+                          } catch {}
+                          setMenuOpen(false);
+                          setShowNotifications(false);
+                          setAccountMenuOpen(false);
+                        } finally {
+                          setLoggingOut(false);
+                        }
+                      }}
+                      disabled={loggingOut}
+                      className={`block w-full text-left px-3 py-2 text-sm rounded-b-md hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                        loggingOut ? 'opacity-50 cursor-not-allowed' : ''
+                      } text-red-600`}
+                    >
+                      {loggingOut ? 'Logging out…' : 'Log out'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Visible Logout on desktop (quick action) */}
                 <button
                   onClick={async () => {
                     if (loggingOut) return;
                     setLoggingOut(true);
                     try {
                       await signOut();
-                      // Hard-clear any persisted event data to avoid flicker
                       try {
                         resetStore();
                         if (typeof localStorage !== 'undefined') {
@@ -272,12 +321,13 @@ export function App() {
                       } catch {}
                       setMenuOpen(false);
                       setShowNotifications(false);
+                      setAccountMenuOpen(false);
                     } finally {
                       setLoggingOut(false);
                     }
                   }}
                   disabled={loggingOut}
-                  className={`hidden sm:inline-flex px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium transition-all duration-200 active:scale-95 ${
+                  className={`hidden sm:inline-flex px-3 py-1.5 ml-1 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium transition-all duration-200 active:scale-95 ${
                     loggingOut
                       ? "opacity-50 cursor-not-allowed text-gray-400 dark:text-gray-500"
                       : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -286,7 +336,7 @@ export function App() {
                 >
                   {loggingOut ? "Logging out..." : "Logout"}
                 </button>
-              </>
+              </div>
             ) : (
               <Link
                 to="/login"

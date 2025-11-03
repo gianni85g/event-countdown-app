@@ -8,7 +8,6 @@ export default function Profile() {
 
   const [name, setName] = useState(user?.user_metadata?.display_name || "");
   const [password, setPassword] = useState("");
-  const initials = (user?.email?.[0] || "U").toUpperCase();
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -63,11 +62,7 @@ export default function Profile() {
     <div className="max-w-md mx-auto mt-10 bg-white p-6 rounded-xl shadow">
       <h1 className="text-xl font-semibold mb-4 text-center">My Profile</h1>
 
-      <div className="flex flex-col items-center gap-3 mb-4">
-        <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 text-2xl font-semibold border">
-          {initials}
-        </div>
-      </div>
+      {/* Avatar removed for v2 – keeping profile minimal */}
 
       <div className="flex flex-col gap-3">
         <label className="text-sm text-gray-600">Email</label>

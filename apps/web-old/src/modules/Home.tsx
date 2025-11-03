@@ -44,6 +44,7 @@ export function Home() {
   const shareMoment = useEventStore((s) => (s as any).shareMoment);
   const acceptMoment = useEventStore((s) => (s as any).acceptMoment);
   const declineMoment = useEventStore((s) => (s as any).declineMoment);
+  const removeEvent = useEventStore((s) => (s as any).removeEvent);
   const [loading, setLoading] = useState(true);
   const [showShare, setShowShare] = useState(false);
   const [selectedMoment, setSelectedMoment] = useState<any>(null);
@@ -51,6 +52,24 @@ export function Home() {
   const [processingMomentId, setProcessingMomentId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const preparationsRef = useRef<HTMLDivElement | null>(null);
+
+  // Safe delete handler (prevents crash, updates local state immediately)
+  const handleDelete = async (id: string) => {
+    try {
+      if (typeof removeEvent === 'function') {
+        await removeEvent(id);
+      } else if ((supabase as any)?.from) {
+        await (supabase as any).from('moments').delete().eq('id', id);
+        // Optimistic local removal if needed
+        try {
+          const { events: current } = useEventStore.getState();
+          useEventStore.setState({ events: current.filter((m: any) => m.id !== id) });
+        } catch {}
+      }
+    } catch (err) {
+      console.error('Failed to delete moment:', err);
+    }
+  };
   
   // Dashboard filter state (All / My Moments / Shared with Me)
   const [momentFilter, setMomentFilter] = useState<"all" | "mine" | "shared">("all");

@@ -114,13 +114,9 @@ export function Home() {
 
   const sorted = useMemo(
     () => [...events].sort((a: any, b: any) => {
-      // Shared with me first
-      if (a.sharedWithMe && !b.sharedWithMe) return -1;
-      if (!a.sharedWithMe && b.sharedWithMe) return 1;
-      // Then most recently created/edited first
-      const aTime = new Date(a.lastEdited || a.createdAt || a.date).getTime();
-      const bTime = new Date(b.lastEdited || b.createdAt || b.date).getTime();
-      return bTime - aTime;
+      const aTime = new Date(a.date).getTime();
+      const bTime = new Date(b.date).getTime();
+      return aTime - bTime; // soonest first
     }),
     [events]
   );

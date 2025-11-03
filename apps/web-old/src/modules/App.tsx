@@ -243,6 +243,27 @@ export function App() {
                         <div className="text-xs text-gray-500 mt-1">{new Date(n.created_at).toLocaleString()}</div>
                       </button>
                     ))}
+                    {/* Footer action for small screens */}
+                    <div className="sticky bottom-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur border-t border-gray-200 dark:border-gray-700 mt-1">
+                      <button
+                        className={`w-full text-center px-3 py-2 text-sm ${unreadCount > 0 ? 'text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-700' : 'text-gray-400 cursor-not-allowed'}`}
+                        onClick={async () => {
+                          const email = user?.email?.toLowerCase().trim();
+                          if (!email || !supabase || unreadCount === 0) return;
+                          try {
+                            await (supabase as any)
+                              .from("notifications")
+                              .update({ read: true })
+                              .eq("recipient", email);
+                          } catch {}
+                          fetchNotifications?.(email);
+                        }}
+                        disabled={unreadCount === 0}
+                        title="Mark all as read"
+                      >
+                        Mark all as read
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

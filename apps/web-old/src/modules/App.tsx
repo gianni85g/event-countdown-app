@@ -13,6 +13,7 @@ export function App() {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationsRef = useRef<HTMLDivElement | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const notifications = useEventStore((s: any) => (s as any).notifications || []);
   const fetchNotifications = useEventStore((s: any) => (s as any).fetchNotifications);
@@ -71,7 +72,7 @@ export function App() {
 
     return () => {
       isMounted = false;
-      subscription?.subscription?.unsubscribe?.();
+      subscription?.unsubscribe?.();
     };
   }, [navigate]);
   
@@ -254,13 +255,26 @@ export function App() {
                 {/* Visible Logout on desktop */}
                 <button
                   onClick={async () => {
-                    await signOut();
-                    navigate("/login");
+                    if (loggingOut) return;
+                    setLoggingOut(true);
+                    try {
+                      await signOut();
+                      setMenuOpen(false);
+                      setShowNotifications(false);
+                      navigate("/login");
+                    } finally {
+                      setLoggingOut(false);
+                    }
                   }}
-                  className="hidden sm:inline-flex px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 active:scale-95"
+                  disabled={loggingOut}
+                  className={`hidden sm:inline-flex px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium transition-all duration-200 active:scale-95 ${
+                    loggingOut
+                      ? "opacity-50 cursor-not-allowed text-gray-400 dark:text-gray-500"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
                   title="Log out"
                 >
-                  Logout
+                  {loggingOut ? "Logging out..." : "Logout"}
                 </button>
               </>
             ) : (

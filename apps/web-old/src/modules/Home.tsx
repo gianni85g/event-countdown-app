@@ -51,11 +51,25 @@ export function Home() {
   const [shareEmail, setShareEmail] = useState("");
   const [processingMomentId, setProcessingMomentId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [warningMessage, setWarningMessage] = useState<string | null>(null);
   const preparationsRef = useRef<HTMLDivElement | null>(null);
 
   // Safe delete handler (prevents crash, updates local state immediately)
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (moment: any) => {
     try {
+      // Block deletion for moments shared with the current user
+      const currentUser = useAuthStore.getState().user;
+      const userEmail = currentUser?.email?.toLowerCase().trim();
+      const isSharedWithUser = Array.isArray((moment as any)?.shared_with)
+        ? (moment.shared_with as string[]).some((e) => e?.toLowerCase?.().trim?.() === userEmail)
+        : false;
+      const isOwner = (moment as any)?.user_id === currentUser?.id;
+      if (isSharedWithUser && !isOwner) {
+        setWarningMessage("This moment cannot be canceled because it was shared with you.");
+        return;
+      }
+
+      const id = moment?.id as string;
       if (typeof removeEvent === 'function') {
         await removeEvent(id);
       } else if ((supabase as any)?.from) {
@@ -783,6 +797,23 @@ export function Home() {
             : 'bg-red-500 text-white'
         }`}>
           <p className="font-medium">{toast.message}</p>
+        </div>
+      )}
+
+      {/* Warning Modal for blocked deletion */}
+      {warningMessage && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg max-w-sm w-full mx-4 border border-gray-200 dark:border-gray-700">
+            <p className="text-gray-800 dark:text-gray-100 mb-4">{warningMessage}</p>
+            <div className="text-right">
+              <button
+                onClick={() => setWarningMessage(null)}
+                className="px-4 py-2 rounded bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
         </div>
       )}
       

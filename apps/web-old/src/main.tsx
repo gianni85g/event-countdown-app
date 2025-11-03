@@ -54,6 +54,10 @@ const router = createBrowserRouter([
         path: "edit/:id", 
         element: <EditEvent />
       },
+      {
+        path: "preparations",
+        element: <Home />
+      },
       { 
         path: "profile", 
         element: <Profile />

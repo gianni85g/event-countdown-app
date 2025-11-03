@@ -1,4 +1,4 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, NavLink } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore, supabase } from "@moments/shared";
 import { useEventStore } from "../store/useEventStore";
@@ -117,7 +117,7 @@ export function App() {
   }, [user?.email, fetchNotifications]);
   
   const displayName = user?.user_metadata?.display_name?.trim() || user?.user_metadata?.name?.trim() || user?.email?.split("@")[0] || "User";
-  const avatarUrl = user?.user_metadata?.avatar_url;
+  const initials = (user?.email?.[0] || "U").toUpperCase();
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900">
@@ -137,6 +137,7 @@ export function App() {
               {menuOpen && (
                 <div className="absolute left-0 mt-2 w-44 rounded-md shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-1 z-50">
                   <Link to="/" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Home</Link>
+                  <Link to="/preparations" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Preparations</Link>
                   <Link to="/memories" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Memories</Link>
                   <Link to="/profile" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Profile</Link>
                   <div className="px-3 py-1.5">
@@ -168,6 +169,14 @@ export function App() {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+            <nav className="hidden sm:flex items-center gap-3 mr-1">
+              <NavLink to="/" className={({isActive}) => `text-sm font-medium ${isActive ? 'text-indigo-600' : 'text-gray-700 dark:text-gray-100'} hover:text-indigo-500`}>
+                Moments
+              </NavLink>
+              <NavLink to="/preparations" className={({isActive}) => `text-sm font-medium ${isActive ? 'text-indigo-600' : 'text-gray-700 dark:text-gray-100'} hover:text-indigo-500`}>
+                Preparations
+              </NavLink>
+            </nav>
             {/* Desktop menu quick add */}
             <Link
               to="/add"
@@ -314,11 +323,7 @@ export function App() {
                   aria-expanded={accountMenuOpen}
                   title="Account menu"
                 >
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full border" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs">👤</div>
-                  )}
+                  <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-semibold text-gray-700">{initials}</div>
                   <span className="hidden sm:inline">{displayName}</span>
                 </button>
 

@@ -1,5 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useMemo, useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { getCountdown, daysUntil, useAuthStore } from "@moments/shared";
 import { useEventStore } from "../store/useEventStore";
 import { EventCategory } from "@moments/shared";
@@ -26,6 +26,7 @@ function getTaskCountdownColor(daysLeft: number) {
 
 export function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthStore();
   
   // ✅ Subscribe to Zustand store keys (triggers re-render when tasks update)
@@ -47,6 +48,7 @@ export function Home() {
   const [shareEmail, setShareEmail] = useState("");
   const [processingMomentId, setProcessingMomentId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const preparationsRef = useRef<HTMLDivElement | null>(null);
   
   // Dashboard filter state (All / My Moments / Shared with Me)
   const [momentFilter, setMomentFilter] = useState<"all" | "mine" | "shared">("all");
@@ -120,6 +122,16 @@ export function Home() {
     }),
     [events]
   );
+
+  // If visiting /preparations route, scroll to the preparations section
+  useEffect(() => {
+    if (location.pathname.endsWith('/preparations')) {
+      // small delay to ensure DOM is rendered
+      setTimeout(() => {
+        preparationsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+  }, [location.pathname]);
 
   const isPast = (m: any) => !!(m as any).isPast || new Date(m.date) < new Date();
 
@@ -462,7 +474,7 @@ export function Home() {
 
       {/* Upcoming Tasks Section */}
       {sortedTasks.length > 0 && (
-        <div>
+        <div ref={preparationsRef}>
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mt-8 mb-1">
             Preparations
             <span className="block h-[2px] w-12 sm:w-16 bg-indigo-400 dark:bg-indigo-500 mt-2 rounded" />

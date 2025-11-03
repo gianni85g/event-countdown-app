@@ -1,16 +1,16 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./styles.css";
 import { App } from "./modules/App";
-import { Home } from "./modules/Home";
-import { EventDetails } from "./modules/EventDetails";
-import { AddEvent } from "./modules/AddEvent";
-import { EditEvent } from "./modules/EditEvent";
-import Memories from "./modules/Memories";
-import Login from "./modules/Login";
-import Profile from "./pages/Profile";
-import ResetPassword from "./pages/ResetPassword";
+const Home = lazy(() => import("./modules/Home").then(m => ({ default: m.Home })));
+const EventDetails = lazy(() => import("./modules/EventDetails").then(m => ({ default: m.EventDetails })));
+const AddEvent = lazy(() => import("./modules/AddEvent").then(m => ({ default: m.AddEvent })));
+const EditEvent = lazy(() => import("./modules/EditEvent").then(m => ({ default: m.EditEvent })));
+const Memories = lazy(() => import("./modules/Memories"));
+const Login = lazy(() => import("./modules/Login"));
+const Profile = lazy(() => import("./pages/Profile"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 import { useAuthStore } from "@moments/shared";
 import { useEventStore } from "./store/useEventStore";
 
@@ -28,11 +28,19 @@ const requestNotificationPermission = () => {
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <Login />
+    element: (
+      <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading…</div>}>
+        <Login />
+      </Suspense>
+    )
   },
   {
     path: "/reset-password",
-    element: <ResetPassword />
+    element: (
+      <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading…</div>}>
+        <ResetPassword />
+      </Suspense>
+    )
   },
   {
     path: "/",
@@ -40,31 +48,59 @@ const router = createBrowserRouter([
     children: [
       { 
         index: true, 
-        element: <Home />
+        element: (
+          <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading…</div>}>
+            <Home />
+          </Suspense>
+        )
       },
       { 
         path: "event/:id", 
-        element: <EventDetails />
+        element: (
+          <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading…</div>}>
+            <EventDetails />
+          </Suspense>
+        )
       },
       { 
         path: "add", 
-        element: <AddEvent />
+        element: (
+          <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading…</div>}>
+            <AddEvent />
+          </Suspense>
+        )
       },
       { 
         path: "edit/:id", 
-        element: <EditEvent />
+        element: (
+          <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading…</div>}>
+            <EditEvent />
+          </Suspense>
+        )
       },
       {
         path: "preparations",
-        element: <Home />
+        element: (
+          <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading…</div>}>
+            <Home />
+          </Suspense>
+        )
       },
       { 
         path: "profile", 
-        element: <Profile />
+        element: (
+          <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading…</div>}>
+            <Profile />
+          </Suspense>
+        )
       }
       ,{
         path: "memories",
-        element: <Memories />
+        element: (
+          <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading…</div>}>
+            <Memories />
+          </Suspense>
+        )
       }
     ]
   }

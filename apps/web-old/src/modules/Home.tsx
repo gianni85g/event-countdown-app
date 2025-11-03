@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useMemo, useState, useEffect, useRef } from "react";
+import { supabase } from "@moments/shared";
 import { getCountdown, daysUntil, useAuthStore } from "@moments/shared";
 import { useEventStore } from "../store/useEventStore";
 import { EventCategory } from "@moments/shared";
@@ -34,6 +35,7 @@ export function Home() {
   const moments = useEventStore((s) => (s as any).moments || []);
   const tasks = useEventStore((s) => (s as any).tasks || []);
   const getAllTasks = useEventStore((s) => s.getAllTasks);
+  const subscribeRealtime = useEventStore((s: any) => (s as any).subscribeRealtime);
   const getActiveTasks = useEventStore((s: any) => s.getActiveTasks);
   const checkUpcomingEvents = useEventStore((s) => s.checkUpcomingEvents);
   const checkUpcomingTasks = useEventStore((s) => s.checkUpcomingTasks);
@@ -123,6 +125,19 @@ export function Home() {
     [events]
   );
 
+  // Realtime moments updates
+  useEffect(() => {
+    if (!subscribeRealtime) return;
+    const channel = subscribeRealtime();
+    return () => {
+      try {
+        if (channel && (supabase as any)?.removeChannel) {
+          (supabase as any).removeChannel(channel);
+        }
+      } catch {}
+    };
+  }, [subscribeRealtime]);
+
   // (scroll effect added later, after upcomingTasks is defined)
 
   const isPast = (m: any) => !!(m as any).isPast || new Date(m.date) < new Date();
@@ -208,11 +223,40 @@ export function Home() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
+      <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
+        <div className="text-center mb-6">
           <p className="text-gray-500 dark:text-gray-400 text-lg">Loading moments...</p>
-          <div className="mt-4 animate-pulse">
-            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded w-32 sm:w-48 mx-auto"></div>
+        </div>
+        {/* Skeleton grid for moments */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 animate-pulse">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-2xl p-[1px] bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5 h-60 sm:h-64 flex flex-col">
+                <div className="h-5 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
+                <div className="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                <div className="flex gap-2 mb-4">
+                  <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                  <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                </div>
+                <div className="mt-auto flex items-center justify-between">
+                  <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-8 w-14 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Skeleton for preparations header/list */}
+        <div className="mt-10">
+          <div className="h-6 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
+          <div className="space-y-3 animate-pulse">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
+                <div className="h-4 w-2/3 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                <div className="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -317,9 +361,7 @@ export function Home() {
                   (e as any).status === "pending" || (e as any).sharedWithMe ? "opacity-90" : "opacity-100"
                 }`}
               >
-                {(e as any).sharedWithMe && (
-                  <span className="absolute top-3 right-3 text-xs px-2 py-1 bg-indigo-500 text-white rounded-full">Shared with you</span>
-                )}
+                {/* Shared with you badge intentionally removed */}
                 {isPast(e) && (
                   <span className="absolute top-12 right-3 text-xs px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded-full">⏳ Past Due</span>
                 )}

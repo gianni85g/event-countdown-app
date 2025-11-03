@@ -105,6 +105,11 @@ export function App() {
             }
           }
         )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "notifications" },
+          () => fetchNotifications?.(normalizedEmail)
+        )
         .subscribe();
     }
 
@@ -317,9 +322,9 @@ export function App() {
             )}
             {/* Profile / Account Menu */}
             {user ? (
-              <div className="relative flex-shrink-0" ref={accountMenuRef}>
+              <div className="relative flex items-center gap-2 flex-shrink-0" ref={accountMenuRef}>
                 <button
-                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-500 dark:hover:text-blue-400 font-medium transition-colors duration-200 px-2 py-1 rounded"
+                  className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-500 dark:hover:text-blue-400 font-medium transition-colors duration-200 px-2 py-1 rounded"
                   onClick={() => {
                     setAccountMenuOpen((v) => !v);
                     setShowNotifications(false);

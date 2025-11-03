@@ -105,7 +105,7 @@ export function createEventStore(storage) {
                 preparations (*),
                 comments (*)
               `)
-                    .order("date", { ascending: true });
+                    .order("created_at", { ascending: false });
                 // Apply OR filter when we have the email; otherwise rely on RLS
                 let data, error;
                 if (userEmail) {
@@ -187,6 +187,7 @@ export function createEventStore(storage) {
                                 fileName: comment.file_name
                             })),
                             reminderDays: moment.reminder_days || 3,
+                            createdAt: moment.created_at,
                             lastEdited: moment.updated_at || moment.created_at
                         };
                     })

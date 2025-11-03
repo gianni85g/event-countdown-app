@@ -123,15 +123,7 @@ export function Home() {
     [events]
   );
 
-  // If visiting /preparations route, scroll to the preparations section
-  useEffect(() => {
-    if (location.pathname.endsWith('/preparations')) {
-      // small delay to ensure DOM is rendered
-      setTimeout(() => {
-        preparationsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 50);
-    }
-  }, [location.pathname]);
+  // (scroll effect added later, after upcomingTasks is defined)
 
   const isPast = (m: any) => !!(m as any).isPast || new Date(m.date) < new Date();
 
@@ -153,6 +145,15 @@ export function Home() {
       })
       .slice(0, 15);
   }, [events, getAllTasks, getActiveTasks, tasks]);
+
+  // If visiting /preparations route, scroll to the preparations section when tasks are ready
+  useEffect(() => {
+    if (location.pathname.endsWith('/preparations')) {
+      requestAnimationFrame(() => {
+        preparationsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [location.pathname, upcomingTasks.length]);
 
   // Extract unique owner names from tasks (ignore undefined/null)
   const owners = useMemo<string[]>(() => {
@@ -472,9 +473,11 @@ export function Home() {
         )}
       </div>
 
+      {/* Anchor for Preparations (always present) */}
+      <div ref={preparationsRef} />
       {/* Upcoming Tasks Section */}
       {sortedTasks.length > 0 && (
-        <div ref={preparationsRef}>
+        <div>
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mt-8 mb-1">
             Preparations
             <span className="block h-[2px] w-12 sm:w-16 bg-indigo-400 dark:bg-indigo-500 mt-2 rounded" />

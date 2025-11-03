@@ -170,13 +170,18 @@ export function App() {
           {/* Right: Actions */}
           <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
             <nav className="hidden sm:flex items-center gap-3 mr-1">
-              <NavLink to="/" className={({isActive}) => `text-sm font-medium ${isActive ? 'text-indigo-600' : 'text-gray-700 dark:text-gray-100'} hover:text-indigo-500`}>
-                Moments
-              </NavLink>
               <NavLink to="/preparations" className={({isActive}) => `text-sm font-medium ${isActive ? 'text-indigo-600' : 'text-gray-700 dark:text-gray-100'} hover:text-indigo-500`}>
                 Preparations
               </NavLink>
             </nav>
+            {/* Mobile quick link to Preparations */}
+            <Link
+              to="/preparations"
+              className="inline-flex sm:hidden px-2 py-1 rounded-md text-xs font-medium text-gray-700 dark:text-gray-100 hover:text-indigo-500"
+              aria-label="Preparations"
+            >
+              Preparations
+            </Link>
             {/* Desktop menu quick add */}
             <Link
               to="/add"

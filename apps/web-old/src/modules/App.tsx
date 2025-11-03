@@ -11,6 +11,11 @@ export function App() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement | null>(null);
+
+  const notifications = useEventStore((s: any) => (s as any).notifications || []);
+  const fetchNotifications = useEventStore((s: any) => (s as any).fetchNotifications);
 
   // Track user changes and reset store when switching users
   useEffect(() => {
@@ -76,12 +81,50 @@ export function App() {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
     }
     if (menuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
+    document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
+
+  // Fetch notifications and subscribe to realtime
+  useEffect(() => {
+    const normalizedEmail = user?.email?.toLowerCase().trim();
+    if (!normalizedEmail) return;
+
+    fetchNotifications?.(normalizedEmail);
+
+    const poll = setInterval(() => fetchNotifications?.(normalizedEmail), 10000);
+
+    let channel: any = null;
+    if ((supabase as any)?.channel) {
+      channel = (supabase as any)
+        .channel(`notifications-${normalizedEmail.replace(/[^a-z0-9]/g, '-')}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "notifications" },
+          (payload: any) => {
+            const n = payload?.new;
+            if (n?.recipient?.toLowerCase?.().trim?.() === normalizedEmail) {
+              fetchNotifications?.(normalizedEmail);
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      clearInterval(poll);
+      if (channel && (supabase as any)?.removeChannel) {
+        (supabase as any).removeChannel(channel);
+      }
+    };
+  }, [user?.email, fetchNotifications]);
   
   const displayName = user?.user_metadata?.display_name?.trim() || user?.user_metadata?.name?.trim() || user?.email?.split("@")[0] || "User";
   const avatarUrl = user?.user_metadata?.avatar_url;
@@ -142,14 +185,58 @@ export function App() {
             >
               + New
             </Link>
-            {/* Notification bell placeholder (moved near profile) */}
-            <button
-              aria-label="Notifications"
-              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
-              title="Notifications"
-            >
-              <Bell className="w-5 h-5" />
-            </button>
+            {/* Notifications */}
+            <div className="relative" ref={notificationsRef}>
+              <button
+                aria-label="Notifications"
+                className="relative p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                title="Notifications"
+                onClick={() => setShowNotifications((v) => !v)}
+              >
+                <Bell className="w-5 h-5" />
+                {(notifications?.filter?.((n: any) => !n.read)?.length || 0) > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                    {Math.min(9, notifications.filter((n: any) => !n.read).length)}
+                  </span>
+                )}
+              </button>
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-auto rounded-md shadow-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
+                  <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <span className="font-semibold text-sm">Notifications</span>
+                    <span className="text-xs text-gray-500">{notifications.length || 0}</span>
+                  </div>
+                  <div className="py-1">
+                    {(!notifications || notifications.length === 0) && (
+                      <div className="px-3 py-4 text-sm text-gray-500">No notifications</div>
+                    )}
+                    {notifications?.map?.((n: any) => (
+                      <button
+                        key={n.id}
+                        onClick={async () => {
+                          try {
+                            await (supabase as any)
+                              .from("notifications")
+                              .update({ read: true })
+                              .eq("id", n.id);
+                          } catch {}
+                          setShowNotifications(false);
+                          if (n.link) {
+                            navigate(n.link);
+                          }
+                        }}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                          !n.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                        }`}
+                      >
+                        <div className="text-gray-800 dark:text-gray-100">{n.message}</div>
+                        <div className="text-xs text-gray-500 mt-1">{new Date(n.created_at).toLocaleString()}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             {/* Profile */}
             {user ? (
               <>

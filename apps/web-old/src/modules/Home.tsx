@@ -113,7 +113,15 @@ export function Home() {
   }, [checkUpcomingEvents, checkUpcomingTasks]);
 
   const sorted = useMemo(
-    () => [...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+    () => [...events].sort((a: any, b: any) => {
+      // Shared with me first
+      if (a.sharedWithMe && !b.sharedWithMe) return -1;
+      if (!a.sharedWithMe && b.sharedWithMe) return 1;
+      // Then most recently created/edited first
+      const aTime = new Date(a.lastEdited || a.createdAt || a.date).getTime();
+      const bTime = new Date(b.lastEdited || b.createdAt || b.date).getTime();
+      return bTime - aTime;
+    }),
     [events]
   );
 
@@ -203,7 +211,7 @@ export function Home() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Welcoming Header */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -217,12 +225,12 @@ export function Home() {
         </p>
       </motion.div>
       {/* Header Filters */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 w-full">
         {/* Dashboard Filters */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setMomentFilter("all")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] focus:ring-2 focus:ring-blue-400 focus:outline-none ${
+            className={`px-4 py-2 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] focus:ring-2 focus:ring-blue-400 focus:outline-none ${
               momentFilter === "all"
                 ? "bg-blue-500 dark:bg-blue-600 text-white shadow-md"
                 : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
@@ -261,7 +269,7 @@ export function Home() {
           <button
             key={cat}
             onClick={() => setFilter(cat as any)}
-            className={`py-2 px-3 text-sm md:text-base rounded-full font-medium transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] focus:ring-2 focus:ring-blue-400 focus:outline-none ${
+            className={`py-2 px-3 min-h-[40px] text-sm md:text-base rounded-full font-medium transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] focus:ring-2 focus:ring-blue-400 focus:outline-none ${
               filter === cat
                 ? 'bg-blue-500 dark:bg-blue-600 text-white shadow-md'
                 : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 hover:shadow-sm text-gray-700 dark:text-gray-300'
@@ -288,19 +296,26 @@ export function Home() {
           const categoryInfo = getCategoryInfo(e.category);
           
         return (
-            <div key={e.id} className="rounded-2xl shadow-lg hover:shadow-xl transition-all border border-transparent bg-gradient-to-r from-pink-200 to-indigo-200 p-[1px] relative">
+            <div key={e.id} className={`rounded-2xl shadow-lg hover:shadow-xl transition-all border border-transparent p-[1px] relative ${
+              (e as any).sharedWithMe ? 'bg-gradient-to-r from-indigo-200 to-blue-200' : 'bg-gradient-to-r from-pink-200 to-indigo-200'
+            }`}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
                 className={`bg-white dark:bg-gray-800 rounded-2xl p-4 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
-                  (e as any).status === "pending" ? "opacity-60" : "opacity-100"
+                  (e as any).status === "pending" || (e as any).sharedWithMe ? "opacity-90" : "opacity-100"
                 }`}
               >
                 {isPast(e) && (
                   <span className="absolute top-2 right-3 text-xs px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded-full">
                     ⏳ Past Due
+                  </span>
+                )}
+                {(e as any).sharedWithMe && (
+                  <span className="absolute top-2 right-3 text-xs px-2 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 rounded-full">
+                    Shared with you
                   </span>
                 )}
               <div className="flex items-start justify-between mb-2">

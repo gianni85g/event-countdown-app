@@ -46,7 +46,8 @@ export function App() {
 
   // Restore session and handle redirects with specific auth events
   useEffect(() => {
-    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
+    if (!supabase) return;
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "INITIAL_SESSION") {
         if (!session) navigate("/login");
       } else if (event === "SIGNED_IN") {
@@ -57,7 +58,7 @@ export function App() {
     });
 
     return () => {
-      subscription?.unsubscribe?.();
+      authListener.subscription.unsubscribe();
     };
   }, [navigate]);
   
@@ -85,7 +86,7 @@ export function App() {
     const poll = setInterval(() => fetchNotifications?.(normalizedEmail), 10000);
 
     let channel: any = null;
-    if ((supabase as any)?.channel) {
+    if (supabase && (supabase as any)?.channel) {
       channel = (supabase as any)
         .channel(`notifications-${normalizedEmail.replace(/[^a-z0-9]/g, '-')}`)
         .on(
@@ -103,7 +104,7 @@ export function App() {
 
     return () => {
       clearInterval(poll);
-      if (channel && (supabase as any)?.removeChannel) {
+      if (channel && supabase && (supabase as any)?.removeChannel) {
         (supabase as any).removeChannel(channel);
       }
     };
@@ -113,10 +114,10 @@ export function App() {
   const avatarUrl = user?.user_metadata?.avatar_url;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900">
       {/* Sticky Header */}
       <header className="sticky top-0 z-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur border-b border-gray-200 dark:border-gray-700 px-3 sm:px-4 py-3 shadow-sm">
-        <div className="max-w-4xl w-full mx-auto flex items-center justify-between gap-3">
+        <div className="max-w-4xl w-full mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-3">
           {/* Left: Hamburger (mobile) + App name */}
           <div className="flex items-center gap-2">
             <div className="relative" ref={menuRef}>
@@ -187,7 +188,28 @@ export function App() {
                 <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-auto rounded-md shadow-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
                   <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <span className="font-semibold text-sm">Notifications</span>
-                    <span className="text-xs text-gray-500">{notifications.length || 0}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">{notifications.length || 0}</span>
+                      {(notifications?.some?.((n: any) => !n.read)) && (
+                        <button
+                          className="text-xs text-blue-600 hover:underline"
+                          onClick={async () => {
+                            const email = user?.email?.toLowerCase().trim();
+                            if (!email || !supabase) return;
+                            try {
+                              await (supabase as any)
+                                .from("notifications")
+                                .update({ read: true })
+                                .eq("recipient", email);
+                            } catch {}
+                            fetchNotifications?.(email);
+                          }}
+                          title="Mark all as read"
+                        >
+                          Mark all as read
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="py-1">
                     {(!notifications || notifications.length === 0) && (
@@ -209,7 +231,7 @@ export function App() {
                           }
                         }}
                         className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                          !n.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                          !n.read ? 'bg-blue-50 dark:bg-blue-900/20' : 'opacity-70'
                         }`}
                       >
                         <div className="text-gray-800 dark:text-gray-100">{n.message}</div>
@@ -278,7 +300,7 @@ export function App() {
       </header>
       
       {/* Main Content */}
-      <div className="max-w-4xl w-full mx-auto px-4 py-6 dark:text-gray-100">
+      <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 dark:text-gray-100">
         <Outlet />
       </div>
     </div>

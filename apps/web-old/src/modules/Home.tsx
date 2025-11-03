@@ -313,20 +313,16 @@ export function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className={`relative bg-white dark:bg-gray-800 rounded-2xl px-4 pb-4 pt-8 sm:px-5 sm:pb-5 sm:pt-10 h-60 sm:h-64 flex flex-col justify-between hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
+                className={`bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5 h-60 sm:h-64 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
                   (e as any).status === "pending" || (e as any).sharedWithMe ? "opacity-90" : "opacity-100"
                 }`}
               >
                 {(e as any).sharedWithMe && (
-                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 bg-indigo-500 text-white rounded-full z-10">
-                    Shared with you
-                  </span>
+                  <span className="absolute top-3 right-3 text-xs px-2 py-1 bg-indigo-500 text-white rounded-full">Shared with you</span>
                 )}
                 {isPast(e) && (
-                  <span className="absolute top-12 right-3 text-xs px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded-full z-10">
-                     ⏳ Past Due
-                   </span>
-                 )}
+                  <span className="absolute top-12 right-3 text-xs px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded-full">⏳ Past Due</span>
+                )}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1 truncate">
@@ -354,6 +350,90 @@ export function Home() {
                   </div>
               </div>
                 <div className={`absolute bottom-4 left-5 text-sm font-medium ${urgent ? "text-red-600" : "text-gray-600"}`}>{getCountdown(e.date)}</div>
+            </div>
+            {e.description && (
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{e.description}</p>
+            )}
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 flex items-center justify-between">
+                <span>📋 {total} {total === 1 ? "preparation step" : "preparation steps"}</span>
+                {total > 0 ? (
+                  <span>
+                    {total - completed} open • {completed} done{completed === total && <span className="ml-1">🎉</span>}
+                  </span>
+                ) : (
+                  <span className="text-gray-400">no steps yet — start preparing 🌿</span>
+                )}
+              </p>
+              {(e as any).status === "pending" ? (
+                <div className="mt-4 flex gap-2">
+                  <button
+                    onClick={async () => {
+                      if (!user?.email || !acceptMoment || processingMomentId === e.id) return;
+                      try {
+                        setProcessingMomentId(e.id);
+                        console.log("[Home] Accepting moment", e.id, "for user", user.email);
+                        await acceptMoment(e.id, user.email);
+                        // Success - fetchMoments will be called by acceptMoment
+                      } catch (error: any) {
+                        console.error("[Home] Error accepting moment:", error);
+                        alert(`Failed to accept invitation: ${error?.message || "Unknown error"}`);
+                      } finally {
+                        setProcessingMomentId(null);
+                      }
+                    }}
+                    disabled={processingMomentId === e.id}
+                    className="px-4 py-2 rounded-md bg-green-500 dark:bg-green-600 text-white hover:bg-green-600 dark:hover:bg-green-700 transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-md focus:ring-2 focus:ring-green-400 focus:outline-none text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {processingMomentId === e.id ? "Processing..." : "Accept"}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!user?.email || !declineMoment || processingMomentId === e.id) return;
+                      try {
+                        setProcessingMomentId(e.id);
+                        console.log("[Home] Declining moment", e.id, "for user", user.email);
+                        await declineMoment(e.id, user.email);
+                        // Success - fetchMoments will be called by declineMoment
+                      } catch (error: any) {
+                        console.error("[Home] Error declining moment:", error);
+                        alert(`Failed to decline invitation: ${error?.message || "Unknown error"}`);
+                      } finally {
+                        setProcessingMomentId(null);
+                      }
+                    }}
+                    disabled={processingMomentId === e.id}
+                    className="px-4 py-2 rounded-md bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-md focus:ring-2 focus:ring-gray-400 focus:outline-none text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {processingMomentId === e.id ? "Processing..." : "Decline"}
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-4 flex gap-2 justify-between">
+                  <div className="flex gap-2">
+                    <Link
+                      to={`/event/${e.id}`}
+                      className="inline-block px-3 py-1.5 rounded-md bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm font-medium"
+                    >
+                      🌿 Plan
+                    </Link>
+                    <Link
+                      to={`/edit/${e.id}`}
+                      className="inline-block bg-blue-200 dark:bg-blue-700 hover:bg-blue-300 dark:hover:bg-blue-600 rounded px-2 py-1 text-sm transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-700 dark:text-gray-200 font-medium"
+                    >
+                      Edit
+                    </Link>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedMoment(e);
+                      setShowShare(true);
+                    }}
+                    className="text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  >
+                    🔗 Share
+                  </button>
+                </div>
+              )}
               </motion.div>
             </div>
           );

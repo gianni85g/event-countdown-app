@@ -247,6 +247,39 @@ export function App() {
                 </div>
               )}
             </div>
+            {/* Mobile visible Logout button */}
+            {user && (
+              <button
+                onClick={async () => {
+                  if (loggingOut) return;
+                  setLoggingOut(true);
+                  try {
+                    await signOut();
+                    try {
+                      resetStore();
+                      if (typeof localStorage !== 'undefined') {
+                        localStorage.removeItem('moments-store');
+                      }
+                    } catch {}
+                    setMenuOpen(false);
+                    setShowNotifications(false);
+                    setAccountMenuOpen(false);
+                  } finally {
+                    setLoggingOut(false);
+                  }
+                }}
+                disabled={loggingOut}
+                aria-label="Log out"
+                title="Log out"
+                className={`inline-flex sm:hidden px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 text-xs font-medium transition-all duration-200 active:scale-95 ${
+                  loggingOut
+                    ? "opacity-50 cursor-not-allowed text-gray-400 dark:text-gray-500"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
+              >
+                {loggingOut ? "...” : "Logout"}
+              </button>
+            )}
             {/* Profile / Account Menu */}
             {user ? (
               <div className="relative" ref={accountMenuRef}>

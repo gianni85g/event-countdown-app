@@ -4,7 +4,7 @@ import { getCountdown, daysUntil, useAuthStore } from "@moments/shared";
 import { useEventStore } from "../store/useEventStore";
 import { EventCategory } from "@moments/shared";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, BellRing } from "lucide-react";
+// Removed task-row bell icons to avoid duplicate notification visuals
 
 const CATEGORIES: { id: EventCategory; label: string; emoji: string; color: string; gradient: string }[] = [
   { id: "birthday", label: "Birthday", emoji: "🎂", color: "bg-pink-200", gradient: "from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/30" },
@@ -556,24 +556,7 @@ export function Home() {
                         <div className="mt-2">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-gray-800 dark:text-gray-100">{task.text}</span>
-                            {task.completionDate && (
-                              <span
-                                title={`Due in ${daysLeft} day${daysLeft === 1 ? "" : "s"}${!task.reminderEnabled ? " (reminder disabled)" : ""}`}
-                                className={`text-sm ${
-                                  !task.reminderEnabled 
-                                    ? "text-gray-300 dark:text-gray-500 opacity-50"
-                                    : daysLeft !== null && daysLeft <= 1
-                                    ? "text-red-500 dark:text-red-400 animate-pulse"
-                                    : "text-gray-400 dark:text-gray-500"
-                                }`}
-                              >
-                                {daysLeft !== null && daysLeft <= 1 ? (
-                                  <BellRing size={16} />
-                                ) : (
-                                  <Bell size={16} />
-                                )}
-                              </span>
-                            )}
+                            {/* Removed bell status icon to avoid duplicate bell UI */}
                           </div>
                         </div>
                       </div>

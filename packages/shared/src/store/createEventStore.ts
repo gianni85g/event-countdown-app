@@ -1077,9 +1077,17 @@ export function createEventStore(storage: StorageAdapter) {
             )
           }));
         },
-        toggleTask: (eventId, taskId) =>
-          set((state) => ({
-            events: state.events.map((e) =>
+        toggleTask: (eventId, taskId) => {
+          const state = get();
+          const event = state.events.find((e) => e.id === eventId);
+          const task = event?.tasks.find((t) => t.id === taskId);
+          if (!task) return;
+          const nextDone = !(task.completed || task.done);
+          const nextCompletionDate = nextDone ? new Date().toISOString() : null;
+
+          // Optimistic update
+          set((s) => ({
+            events: s.events.map((e) =>
               e.id === eventId
                 ? {
                     ...e,
@@ -1087,16 +1095,39 @@ export function createEventStore(storage: StorageAdapter) {
                       t.id === taskId
                         ? {
                             ...t,
-                            completed: !t.completed,
-                            done: !t.done,
-                            completionDate: !t.completed ? new Date().toISOString() : t.completionDate,
+                            completed: nextDone,
+                            done: nextDone,
+                            completionDate: nextCompletionDate,
                           }
                         : t
                     )
                   }
                 : e
             )
-          })),
+          }));
+
+          // Persist
+          if (supabase?.from) {
+            (async () => {
+              try {
+                const { error } = await supabase
+                  .from("preparations")
+                  .update({
+                    done: nextDone,
+                    completion_date: nextCompletionDate,
+                  })
+                  .eq("id", taskId);
+                if (error) {
+                  // eslint-disable-next-line no-console
+                  console.error("Error toggling preparation:", error);
+                }
+              } catch (err) {
+                // eslint-disable-next-line no-console
+                console.error("Unexpected error toggling preparation:", err);
+              }
+            })();
+          }
+        },
         updateTask: async (eventId, taskId, updates) => {
           const updatedTask = {
             ...updates,

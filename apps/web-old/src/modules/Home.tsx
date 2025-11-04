@@ -268,6 +268,8 @@ export function Home() {
     return sortOrder === 'asc' ? diff : -diff;
   });
 
+  const toggleTask = useEventStore((s) => s.toggleTask);
+
   if (loading) {
     return (
       <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
@@ -674,7 +676,13 @@ export function Home() {
                         </span>
                         <div className="mt-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-800 dark:text-gray-100">{task.text}</span>
+                            <input
+                              type="checkbox"
+                              className="accent-indigo-600"
+                              checked={Boolean(task.completed || task.done)}
+                              onChange={() => toggleTask(task.eventId, task.id)}
+                            />
+                            <span className={`font-medium ${task.completed || task.done ? 'line-through text-gray-500' : 'text-gray-800 dark:text-gray-100'}`}>{task.text}</span>
                             {/* Removed bell status icon to avoid duplicate bell UI */}
                           </div>
                         </div>

@@ -236,6 +236,15 @@ export function Home() {
     ? filteredByOwnership
     : filteredByOwnership.filter(e => e.category === filter);
   
+  // Ensure unified sorting by event date desc (owned + shared)
+  const getEventTime = (m: any) => new Date((m as any).date || (m as any).event_date || (m as any).created_at).getTime();
+  const upcomingEventsSorted = useMemo(() => {
+    return visibleEvents
+      .filter((m) => !isPast(m))
+      .slice()
+      .sort((a, b) => getEventTime(b) - getEventTime(a));
+  }, [visibleEvents]);
+  
   // Unread notifications now handled in App-level UI
 
   const filteredTasks = upcomingTasks.filter((t: any) => {
@@ -379,7 +388,7 @@ export function Home() {
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <AnimatePresence>
-          {visibleEvents.filter((m)=>!isPast(m)).map((e) => {
+          {upcomingEventsSorted.map((e) => {
           const total = e.tasks.length;
           const completed = e.tasks.filter((t) => t.completed || t.done).length;
         const pct = Math.round((completed / total) * 100);

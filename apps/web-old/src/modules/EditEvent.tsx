@@ -98,6 +98,7 @@ export function EditEvent() {
   };
 
   return (
+    <>
     <div className="max-w-md">
       <h1 className="text-2xl font-bold mb-4">Edit Moment</h1>
       <div className="space-y-3">
@@ -205,6 +206,7 @@ export function EditEvent() {
         </div>
       </div>
     )}
+    </>
   );
 }
 

@@ -1110,14 +1110,19 @@ export function createEventStore(storage: StorageAdapter) {
           if (supabase?.from) {
             (async () => {
               try {
+                const updates: any = {
+                  // Write to multiple possible schema columns for compatibility
+                  done: nextDone,
+                  completed: nextDone as any,
+                  is_done: nextDone as any,
+                  is_completed: nextDone as any,
+                  completion_date: nextCompletionDate,
+                };
                 const { data, error, status } = await supabase
                   .from("preparations")
-                  .update({
-                    done: nextDone,
-                    completion_date: nextCompletionDate,
-                  })
+                  .update(updates)
                   .eq("id", taskId)
-                  .select("id, done, completion_date")
+                  .select("id, done, completed, is_done, is_completed, completion_date")
                   .single();
                 if (error) {
                   // eslint-disable-next-line no-console
@@ -1131,7 +1136,7 @@ export function createEventStore(storage: StorageAdapter) {
                     ...s,
                     tasks: (s.tasks || []).map((t: any) =>
                       t.id === taskId
-                        ? { ...t, done: data.done, completed: data.done, completion_date: data.completion_date }
+                        ? { ...t, done: Boolean(data.done ?? data.is_done ?? data.completed ?? data.is_completed), completed: Boolean(data.done ?? data.is_done ?? data.completed ?? data.is_completed), completion_date: data.completion_date }
                         : t
                     )
                   }));

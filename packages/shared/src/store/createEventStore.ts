@@ -42,21 +42,20 @@ function generateId(): string {
 
 // Reminder notification functions
 const showNotification = (event: EventItem) => {
-  if (
-    typeof globalThis !== 'undefined' &&
-    typeof (globalThis as any).Notification !== 'undefined' &&
-    (globalThis as any).Notification.permission === 'granted'
-  ) {
-    const countdown = getCountdownObject(event.date);
-    new (globalThis as any).Notification('⏰ Upcoming Event Reminder', {
-      body: `${event.title} is happening in ${countdown.days} days!`,
-      icon: '/favicon.ico',
-    });
-  } else if (
-    typeof globalThis !== 'undefined' &&
-    typeof (globalThis as any).Notification !== 'undefined' &&
-    (globalThis as any).Notification.permission === 'default'
-  ) {
+  const Notif = (typeof globalThis !== 'undefined' ? (globalThis as any).Notification : undefined);
+  if (Notif && Notif.permission === 'granted') {
+    try {
+      const countdown = getCountdownObject(event.date);
+      // Wrap in try/catch to avoid crashes in restricted environments
+      new Notif('⏰ Upcoming Event Reminder', {
+        body: `${event.title} is happening in ${countdown.days} days!`,
+        icon: '/favicon.ico',
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('Notification blocked:', err);
+    }
+  } else if (Notif && Notif.permission === 'default') {
     // Fallback to console if permission not granted
     const countdown = getCountdownObject(event.date);
     // eslint-disable-next-line no-console
@@ -65,16 +64,18 @@ const showNotification = (event: EventItem) => {
 };
 
 const showTaskNotification = (task: Task, event: EventItem) => {
-  if (
-    typeof globalThis !== 'undefined' &&
-    typeof (globalThis as any).Notification !== 'undefined' &&
-    (globalThis as any).Notification.permission === 'granted'
-  ) {
-    const countdown = getCountdownObject(task.completionDate!);
-    new (globalThis as any).Notification('⏰ Task Due Soon', {
-      body: `${task.text} (${event.title}) is due in ${countdown.days} day(s)!`,
-      icon: '/favicon.ico',
-    });
+  const Notif = (typeof globalThis !== 'undefined' ? (globalThis as any).Notification : undefined);
+  if (Notif && Notif.permission === 'granted') {
+    try {
+      const countdown = getCountdownObject(task.completionDate!);
+      new Notif('⏰ Task Due Soon', {
+        body: `${task.text} (${event.title}) is due in ${countdown.days} day(s)!`,
+        icon: '/favicon.ico',
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('Notification blocked:', err);
+    }
   } else {
     // eslint-disable-next-line no-console
     console.log(`Task Reminder: ${task.text} (${event.title}) due soon`);

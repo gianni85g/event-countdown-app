@@ -450,11 +450,14 @@ export function Home() {
             {e.description && (
               <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{e.description}</p>
             )}
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 flex items-center justify-between">
-                <span>📋 {total} {total === 1 ? "preparation step" : "preparation steps"}</span>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 flex items-start justify-between">
+                <span>📋 {total} steps</span>
                 {total > 0 ? (
-                  <span>
-                    {total - completed} open • {completed} done{completed === total && <span className="ml-1">🎉</span>}
+                  <span className="flex flex-col items-end leading-tight">
+                    <span className="text-xs sm:text-sm">{total - completed} open</span>
+                    <span className="text-xs sm:text-sm">
+                      {completed} completed{completed === total && <span className="ml-1">🎉</span>}
+                    </span>
                   </span>
                 ) : (
                   <span className="text-gray-400">no steps yet — start preparing 🌿</span>

@@ -1154,6 +1154,16 @@ export function createEventStore(storage: StorageAdapter) {
                         : t
                     )
                   }));
+                  // Force refresh of moments/tasks to avoid stale state
+                  try {
+                    const { data: u } = await supabase.auth.getUser();
+                    const uid = u?.user?.id;
+                    if (uid) {
+                      await get().fetchMoments(uid);
+                    }
+                  } catch (refreshErr) {
+                    console.warn('[toggleTask] refresh failed:', refreshErr);
+                  }
                 }
               } catch (err) {
                 console.error("[toggleTask] unexpected:", err);

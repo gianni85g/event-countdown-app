@@ -60,11 +60,9 @@ export function Home() {
       // Block deletion for moments shared with the current user
       const currentUser = useAuthStore.getState().user;
       const userEmail = currentUser?.email?.toLowerCase().trim();
-      const isSharedWithUser = Array.isArray((moment as any)?.shared_with)
-        ? (moment.shared_with as string[]).some((e) => e?.toLowerCase?.().trim?.() === userEmail)
-        : false;
       const isOwner = (moment as any)?.user_id === currentUser?.id;
-      if (isSharedWithUser && !isOwner) {
+      // Only the owner can delete; block for non-owners
+      if (!isOwner) {
         setWarningMessage("This moment cannot be canceled because it was shared with you.");
         return;
       }

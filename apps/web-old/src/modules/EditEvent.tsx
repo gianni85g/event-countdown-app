@@ -173,12 +173,20 @@ export function EditEvent() {
         <button className="px-4 py-2 rounded border" onClick={() => navigate(-1)}>
           Cancel
         </button>
-        <button 
-          className="px-4 py-2 rounded bg-red-200 hover:bg-red-300 text-red-800"
-          onClick={handleDelete}
-        >
-          Cancel Moment
-        </button>
+        {(() => {
+          const ownerEmail = (event as any)?.owner_email?.toLowerCase?.().trim?.();
+          const isOwnerByEmail = ownerEmail && user?.email && ownerEmail === user.email.toLowerCase().trim();
+          const isOwnerById = (event as any)?.user_id && user?.id && (event as any).user_id === user.id;
+          const canDelete = Boolean(isOwnerByEmail || isOwnerById);
+          return canDelete ? (
+            <button 
+              className="px-4 py-2 rounded bg-red-200 hover:bg-red-300 text-red-800"
+              onClick={handleDelete}
+            >
+              Cancel Moment
+            </button>
+          ) : null;
+        })()}
       </div>
     </div>
 

@@ -1110,28 +1110,28 @@ export function createEventStore(storage: StorageAdapter) {
           if (supabase?.from) {
             (async () => {
               try {
-                const { data, error } = await supabase
+                const { data, error, status } = await supabase
                   .from("preparations")
                   .update({
                     done: nextDone,
-                    // write both for schema compatibility
-                    completed: nextDone as any,
                     completion_date: nextCompletionDate,
                   })
                   .eq("id", taskId)
-                  .select("id, done, completed, completion_date")
+                  .select("id, done, completion_date")
                   .single();
                 if (error) {
                   // eslint-disable-next-line no-console
                   console.error("Error toggling preparation:", error);
                 }
+                // eslint-disable-next-line no-console
+                console.log("[toggleTask] persisted:", { status, data });
                 // Sync flat tasks list if present
                 if (data) {
                   set((s) => ({
                     ...s,
                     tasks: (s.tasks || []).map((t: any) =>
                       t.id === taskId
-                        ? { ...t, done: data.done, completed: (data as any).completed ?? data.done, completion_date: data.completion_date }
+                        ? { ...t, done: data.done, completed: data.done, completion_date: data.completion_date }
                         : t
                     )
                   }));

@@ -223,10 +223,10 @@ export function createEventStore(storage: StorageAdapter) {
                       id: prep.id,
                       text: prep.text,
                       title: prep.text,
-                      done: prep.done || false,
-                      completed: prep.done || false,
+                      done: Boolean(prep.done ?? prep.is_done ?? prep.completed ?? prep.is_completed ?? false),
+                      completed: Boolean(prep.done ?? prep.is_done ?? prep.completed ?? prep.is_completed ?? false),
                       owner: prep.owner,
-                      completionDate: prep.completion_date,
+                      completionDate: prep.completion_date || prep.completed_at || null,
                       notified: false,
                       reminderEnabled: prep.reminder_enabled ?? true
                     })),

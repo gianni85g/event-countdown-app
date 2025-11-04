@@ -15,7 +15,7 @@ type EventState = {
   updateEvent: (id: string, updates: Partial<EventItem>) => Promise<void>;
   removeEvent: (id: string) => Promise<void>;
   addTask: (eventId: string, taskText: string, owner?: string, completionDate?: string, reminderEnabled?: boolean) => Promise<void>;
-  toggleTask: (eventId: string, taskId: string) => void;
+  toggleTask: (taskId: string, eventId: string) => void;
   updateTask: (eventId: string, taskId: string, updates: Partial<Task>) => Promise<void>;
   removeTask: (eventId: string, taskId: string) => Promise<void>;
   getAllTasks: () => (Task & { eventId: string; eventTitle: string; eventCategory: EventCategory })[];
@@ -1077,13 +1077,16 @@ export function createEventStore(storage: StorageAdapter) {
             )
           }));
         },
-        toggleTask: (eventId, taskId) => {
+        toggleTask: (taskId, eventId) => {
           const state = get();
           const event = state.events.find((e) => e.id === eventId);
           const task = event?.tasks.find((t) => t.id === taskId);
           if (!task) return;
-          const nextDone = !(task.completed || task.done);
+          const nextDone = !Boolean(task.done);
           const nextCompletionDate = nextDone ? new Date().toISOString() : null;
+
+          // Log intent
+          console.log("[toggleTask] local flip", { taskId, eventId, nextDone, nextCompletionDate });
 
           // Optimistic update
           set((s) => ({
@@ -1095,7 +1098,6 @@ export function createEventStore(storage: StorageAdapter) {
                       t.id === taskId
                         ? {
                             ...t,
-                            completed: nextDone,
                             done: nextDone,
                             completionDate: nextCompletionDate,
                           }
@@ -1110,25 +1112,37 @@ export function createEventStore(storage: StorageAdapter) {
           if (supabase?.from) {
             (async () => {
               try {
-                const updates: any = {
-                  // Write to multiple possible schema columns for compatibility
-                  done: nextDone,
-                  completed: nextDone as any,
-                  is_done: nextDone as any,
-                  is_completed: nextDone as any,
-                  completion_date: nextCompletionDate,
-                };
                 const { data, error, status } = await supabase
                   .from("preparations")
-                  .update(updates)
+                  .update({
+                    done: nextDone,
+                    completion_date: nextCompletionDate,
+                  })
                   .eq("id", taskId)
-                  .select("id, done, completed, is_done, is_completed, completion_date")
+                  .select("id, done, completion_date")
                   .single();
                 if (error) {
-                  // eslint-disable-next-line no-console
-                  console.error("Error toggling preparation:", error);
+                  console.error("[toggleTask] error:", error);
+                  // Revert optimistic on error
+                  set((s) => ({
+                    events: s.events.map((e) =>
+                      e.id === eventId
+                        ? {
+                            ...e,
+                            tasks: e.tasks.map((t) =>
+                              t.id === taskId
+                                ? {
+                                    ...t,
+                                    done: !nextDone,
+                                    completionDate: !nextDone ? task.completionDate ?? null : null,
+                                  }
+                                : t
+                            )
+                          }
+                        : e
+                    )
+                  }));
                 }
-                // eslint-disable-next-line no-console
                 console.log("[toggleTask] persisted:", { status, data });
                 // Sync flat tasks list if present
                 if (data) {
@@ -1136,14 +1150,32 @@ export function createEventStore(storage: StorageAdapter) {
                     ...s,
                     tasks: (s.tasks || []).map((t: any) =>
                       t.id === taskId
-                        ? { ...t, done: Boolean(data.done ?? data.is_done ?? data.completed ?? data.is_completed), completed: Boolean(data.done ?? data.is_done ?? data.completed ?? data.is_completed), completion_date: data.completion_date }
+                        ? { ...t, done: Boolean(data.done), completion_date: data.completion_date }
                         : t
                     )
                   }));
                 }
               } catch (err) {
-                // eslint-disable-next-line no-console
-                console.error("Unexpected error toggling preparation:", err);
+                console.error("[toggleTask] unexpected:", err);
+                // Revert optimistic on exception
+                set((s) => ({
+                  events: s.events.map((e) =>
+                    e.id === eventId
+                      ? {
+                          ...e,
+                          tasks: e.tasks.map((t) =>
+                            t.id === taskId
+                              ? {
+                                  ...t,
+                                  done: !nextDone,
+                                  completionDate: !nextDone ? task.completionDate ?? null : null,
+                                }
+                              : t
+                          )
+                        }
+                      : e
+                  )
+                }));
               }
             })();
           }

@@ -243,8 +243,11 @@ export function EventDetails() {
                     <div className="flex items-center gap-2 mb-2">
               <input
                 type="checkbox"
-                        checked={t.completed || t.done}
-                onChange={() => toggleTask(event.id, t.id)}
+                checked={t.done || t.completed}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  toggleTask(t.id, event.id);
+                }}
               />
                       <div className="flex items-center gap-2 flex-1">
                         <span className={`${(t.completed || t.done) ? "line-through text-gray-500" : "text-gray-800 dark:text-gray-100"}`}>

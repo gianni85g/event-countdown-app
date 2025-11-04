@@ -679,8 +679,11 @@ export function Home() {
                             <input
                               type="checkbox"
                               className="accent-indigo-600"
-                              checked={Boolean(task.completed || task.done)}
-                              onChange={() => toggleTask(task.eventId, task.id)}
+                              checked={Boolean(task.done || task.completed)}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                toggleTask(task.id, task.eventId);
+                              }}
                             />
                             <span className={`font-medium ${task.completed || task.done ? 'line-through text-gray-500' : 'text-gray-800 dark:text-gray-100'}`}>{task.text}</span>
                             {/* Removed bell status icon to avoid duplicate bell UI */}

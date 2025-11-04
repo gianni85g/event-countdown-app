@@ -156,9 +156,9 @@ export function Home() {
 
   const sorted = useMemo(
     () => [...events].sort((a: any, b: any) => {
-      const aTime = new Date(a.date).getTime();
-      const bTime = new Date(b.date).getTime();
-      return aTime - bTime; // soonest first
+      const aTime = new Date(a.created_at || a.date).getTime();
+      const bTime = new Date(b.created_at || b.date).getTime();
+      return bTime - aTime; // newest first
     }),
     [events]
   );

@@ -236,13 +236,13 @@ export function Home() {
     ? filteredByOwnership
     : filteredByOwnership.filter(e => e.category === filter);
   
-  // Ensure unified sorting by event date asc (soonest first) for owned + shared
+  // Ensure unified sorting by event date desc (newest first) for owned + shared
   const getEventTime = (m: any) => new Date((m as any).date || (m as any).event_date || (m as any).created_at).getTime();
   const upcomingEventsSorted = useMemo(() => {
     return visibleEvents
       .filter((m) => !isPast(m))
       .slice()
-      .sort((a, b) => getEventTime(a) - getEventTime(b));
+      .sort((a, b) => getEventTime(b) - getEventTime(a));
   }, [visibleEvents]);
   
   // Unread notifications now handled in App-level UI

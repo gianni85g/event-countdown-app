@@ -182,7 +182,7 @@ export function App() {
             {/* Mobile quick link to Preparations */}
             <Link
               to="/preparations"
-              className="inline-flex sm:hidden px-2 py-1 rounded-md text-xs font-medium text-gray-700 dark:text-gray-100 hover:text-indigo-500"
+              className="inline-flex sm:hidden px-2 py-1 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-100 hover:text-indigo-500"
               aria-label="Preparations"
             >
               Preparations
@@ -190,7 +190,7 @@ export function App() {
             {/* Desktop menu quick add */}
             <Link
               to="/add"
-              className="hidden sm:inline-flex px-3 py-1.5 rounded-md bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 hover:scale-[1.03] active:scale-[0.98] hover:shadow focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm font-medium"
+              className="hidden sm:inline-flex px-3 py-1.5 rounded-lg bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 hover:scale-[1.03] active:scale-[0.98] hover:shadow focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm font-medium"
             >
               + New
             </Link>
@@ -198,7 +198,7 @@ export function App() {
             <div className="relative flex-shrink-0" ref={notificationsRef}>
               <button
                 aria-label="Notifications"
-                className="relative p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 hover:text-indigo-500 transition-colors duration-200"
+                className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 hover:text-indigo-500 transition-colors duration-200"
                 title="Notifications"
                 onClick={() => setShowNotifications((v) => !v)}
               >

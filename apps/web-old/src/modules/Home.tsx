@@ -478,7 +478,7 @@ export function Home() {
                       }
                     }}
                     disabled={processingMomentId === e.id}
-                    className="px-4 py-2 rounded-md bg-green-500 dark:bg-green-600 text-white hover:bg-green-600 dark:hover:bg-green-700 transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-md focus:ring-2 focus:ring-green-400 focus:outline-none text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 rounded-lg bg-green-500 dark:bg-green-600 text-white hover:bg-green-600 dark:hover:bg-green-700 transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-md focus:ring-2 focus:ring-green-400 focus:outline-none text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {processingMomentId === e.id ? "Processing..." : "Accept"}
                   </button>
@@ -498,7 +498,7 @@ export function Home() {
                       }
                     }}
                     disabled={processingMomentId === e.id}
-                    className="px-4 py-2 rounded-md bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-md focus:ring-2 focus:ring-gray-400 focus:outline-none text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-md focus:ring-2 focus:ring-gray-400 focus:outline-none text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {processingMomentId === e.id ? "Processing..." : "Decline"}
                   </button>
@@ -508,13 +508,13 @@ export function Home() {
                   <div className="flex gap-2">
                     <Link
                       to={`/event/${e.id}`}
-                      className="inline-block px-3 py-1.5 rounded-md bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm font-medium"
+                      className="inline-block px-3 py-1.5 rounded-lg bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm font-medium"
                     >
                       🌿 Plan
                     </Link>
                     <Link
                       to={`/edit/${e.id}`}
-                      className="inline-block bg-blue-200 dark:bg-blue-700 hover:bg-blue-300 dark:hover:bg-blue-600 rounded px-2 py-1 text-sm transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-700 dark:text-gray-200 font-medium"
+                      className="inline-block bg-blue-200 dark:bg-blue-700 hover:bg-blue-300 dark:hover:bg-blue-600 rounded-lg px-3 py-1.5 text-sm transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] hover:shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-700 dark:text-gray-200 font-medium"
                     >
                       Edit
                     </Link>
@@ -524,7 +524,7 @@ export function Home() {
                       setSelectedMoment(e);
                       setShowShare(true);
                     }}
-                    className="text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    className="text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 focus:ring-2 focus:ring-blue-400 focus:outline-none"
                   >
                     🔗 Share
                   </button>
@@ -746,7 +746,7 @@ export function Home() {
       {/* Share Modal */}
       {showShare && selectedMoment && (
         <div className="fixed inset-0 bg-black/40 dark:bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-sm shadow-lg border border-gray-200 dark:border-gray-700 mx-3">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg max-w-sm w-full mx-4 border border-gray-200 dark:border-gray-700">
             <h3 className="font-semibold mb-3 text-lg text-gray-800 dark:text-gray-100">Share this Moment</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
               {selectedMoment.title || selectedMoment.name}

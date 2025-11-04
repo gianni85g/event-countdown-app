@@ -186,10 +186,10 @@ export function App() {
               aria-label="Preparations"
             >
               Preparations
-            </Link>
+          </Link>
             {/* Desktop menu quick add */}
-            <Link
-              to="/add"
+          <Link
+            to="/add"
               className="hidden sm:inline-flex px-3 py-1.5 rounded-lg bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 hover:scale-[1.03] active:scale-[0.98] hover:shadow focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm font-medium"
             >
               + New
@@ -279,7 +279,7 @@ export function App() {
                         }}
                         disabled={unreadCount === 0}
                         title="Mark all as read"
-                      >
+          >
                         Mark all as read
                       </button>
                     </div>
@@ -412,7 +412,7 @@ export function App() {
                 className="px-3 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 text-sm font-medium text-gray-700 dark:text-gray-300 active:scale-95"
               >
                 Sign In
-              </Link>
+          </Link>
             )}
           </div>
         </div>

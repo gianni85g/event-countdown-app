@@ -173,7 +173,7 @@ export function App() {
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0 flex-nowrap">
             <nav className="hidden sm:flex items-center gap-3 mr-1">
               <NavLink to="/preparations" className={({isActive}) => `text-sm font-medium ${isActive ? 'text-indigo-600' : 'text-gray-700 dark:text-gray-100'} hover:text-indigo-500`}>
                 Preparations

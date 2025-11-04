@@ -398,11 +398,15 @@ export function Home() {
               }`}
             >
               <div
-                className={`bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5 h-60 sm:h-64 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
+                className={`bg-white dark:bg-gray-800 rounded-2xl px-4 pt-8 pb-4 sm:px-5 sm:pt-10 sm:pb-5 h-60 sm:h-64 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
                   (e as any).status === "pending" || (e as any).sharedWithMe ? "opacity-90" : "opacity-100"
                 }`}
               >
-                {/* Shared with you badge intentionally removed */}
+                {(e as any).sharedWithMe && (
+                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-1 text-xs bg-indigo-100 text-indigo-600 dark:bg-indigo-800 dark:text-indigo-200 rounded-full z-10">
+                    Shared with you
+                  </span>
+                )}
                 {isPast(e) && (
                   <span className="absolute top-12 right-3 text-xs px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded-full">⏳ Past Due</span>
                 )}

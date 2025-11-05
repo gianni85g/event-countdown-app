@@ -468,7 +468,7 @@ export function Home() {
                       if (!user?.email || !acceptMoment || processingMomentId === e.id) return;
                       try {
                         setProcessingMomentId(e.id);
-                        console.log("[Home] Accepting moment", e.id, "for user", user.email);
+                        
                         await acceptMoment(e.id, user.email);
                         // Success - fetchMoments will be called by acceptMoment
                       } catch (error: any) {
@@ -488,7 +488,7 @@ export function Home() {
                       if (!user?.email || !declineMoment || processingMomentId === e.id) return;
                       try {
                         setProcessingMomentId(e.id);
-                        console.log("[Home] Declining moment", e.id, "for user", user.email);
+                        
                         await declineMoment(e.id, user.email);
                         // Success - fetchMoments will be called by declineMoment
                       } catch (error: any) {

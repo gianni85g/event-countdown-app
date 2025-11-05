@@ -16,7 +16,7 @@ import { useEventStore } from "./store/useEventStore";
 
 // Don't clear on startup - App.tsx handles user-switch detection
 // This prevents race conditions with data fetching
-console.log("[Startup] App starting...");
+//
 
 // Request notification permission on app load
 const requestNotificationPermission = () => {

@@ -34,7 +34,6 @@ export const useAuthStore = create<AuthState>()(
         
         if (!isSupabaseConfigured() || !supabase) {
           // Mock mode for testing
-          console.log('🔧 Using MOCK auth mode (Supabase not configured)');
           set({ user: { id: 'mock-user-1', email }, loading: false, error: null });
           return;
         }
@@ -62,7 +61,6 @@ export const useAuthStore = create<AuthState>()(
         
         if (!isSupabaseConfigured() || !supabase) {
           // Mock mode for testing
-          console.log('🔧 Using MOCK auth mode (Supabase not configured)');
           set({ user: { id: 'mock-user-1', email, user_metadata: { display_name: name || "" } }, loading: false, error: null });
           return;
         }
@@ -119,7 +117,6 @@ export const useAuthStore = create<AuthState>()(
       signOut: async () => {
         if (!isSupabaseConfigured() || !supabase) {
           // Mock mode for testing
-          console.log('🔧 Using MOCK auth mode');
           set({ user: null, error: null });
           // Clear event store cache
           if (typeof localStorage !== 'undefined') {

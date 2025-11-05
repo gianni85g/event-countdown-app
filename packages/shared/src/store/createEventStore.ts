@@ -56,10 +56,7 @@ const showNotification = (event: EventItem) => {
       console.warn('Notification blocked:', err);
     }
   } else if (Notif && Notif.permission === 'default') {
-    // Fallback to console if permission not granted
-    const countdown = getCountdownObject(event.date);
-    // eslint-disable-next-line no-console
-    console.log(`⏰ ${event.title} is happening in ${countdown.days} days!`);
+    // no-op in production to avoid noisy logs
   }
 };
 
@@ -77,8 +74,7 @@ const showTaskNotification = (task: Task, event: EventItem) => {
       console.warn('Notification blocked:', err);
     }
   } else {
-    // eslint-disable-next-line no-console
-    console.log(`Task Reminder: ${task.text} (${event.title}) due soon`);
+    // no-op in production to avoid noisy logs
   }
 };
 
@@ -137,7 +133,6 @@ export function createEventStore(storage: StorageAdapter) {
         fetchMoments: async (userId: string) => {
           if (!userId || !supabase?.from) return;
           try {
-            console.log("[fetchMoments] Fetching moments with tasks...");
             
             // Get current user email to check invitation status
             const { data: userData } = await supabase.auth.getUser();
@@ -167,15 +162,11 @@ export function createEventStore(storage: StorageAdapter) {
             }
             
             if (data) {
-              console.log("[fetchMoments] Received", data.length, "moments");
               
               // Transform Supabase data to EventItem format
               const transformedEvents = data
                 .map((moment: any) => {
                   const taskCount = moment.preparations?.length || 0;
-                  if (taskCount > 0) {
-                    console.log(`[fetchMoments] Moment "${moment.title}" has ${taskCount} tasks`);
-                  }
                   
                   // Determine if this moment is pending for the current user
                   const isOwner = moment.user_id === userId;
@@ -251,7 +242,6 @@ export function createEventStore(storage: StorageAdapter) {
                 });
               
               const totalTasks = transformedEvents.reduce((sum, e) => sum + e.tasks.length, 0);
-              console.log("[fetchMoments] Total tasks loaded:", totalTasks);
               
               // Update both events and moments state (preserve tasks)
               set((state) => ({
@@ -260,9 +250,8 @@ export function createEventStore(storage: StorageAdapter) {
                 tasks: state.tasks // Preserve existing tasks
               }));
               
-              console.log("[fetchMoments] Store updated with", transformedEvents.length, "events");
             } else {
-              console.log("[fetchMoments] No data returned from Supabase");
+              
             }
           } catch (err) {
             console.error("[fetchMoments] Error fetching moments from Supabase:", err);
@@ -289,7 +278,6 @@ export function createEventStore(storage: StorageAdapter) {
         fetchTasks: async (userId: string) => {
           if (!userId || !supabase?.from) return;
           try {
-            console.log("[fetchTasks] Fetching tasks for user:", userId);
             const { data, error } = await supabase
               .from("preparations")
               .select("*, moments(id, title, date)")
@@ -300,7 +288,6 @@ export function createEventStore(storage: StorageAdapter) {
               return;
             }
             
-            console.log("[fetchTasks] rows:", data?.length ?? 0);
             
             // Update tasks state (preserve moments and events)
             set((state) => ({
@@ -366,14 +353,12 @@ export function createEventStore(storage: StorageAdapter) {
                 console.error("[shareMoment] Current user:", currentUser);
               }
               
-              console.log("[shareMoment] Creating notifications, sender:", senderEmail, "recipients:", emails);
               
               if (senderEmail && emails.length > 0) {
                 const notificationPromises = emails.map(async (email: string) => {
                   const normalizedEmail = email.toLowerCase().trim();
                   // Skip if sharing with yourself
                   if (normalizedEmail === senderEmail) {
-                    console.log(`[shareMoment] Skipping notification for self: ${normalizedEmail}`);
                     return;
                   }
                   
@@ -384,15 +369,7 @@ export function createEventStore(storage: StorageAdapter) {
                     }
                     
                     // Verify session before insert
-                    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-                    console.log(`[shareMoment] Session check:`, {
-                      hasSession: !!sessionData?.session,
-                      sessionUserId: sessionData?.session?.user?.id,
-                      sessionEmail: sessionData?.session?.user?.email,
-                      accessToken: sessionData?.session?.access_token ? 'Present' : 'Missing',
-                      tokenExpiry: sessionData?.session?.expires_at,
-                      sessionError: sessionError
-                    });
+                    const { data: sessionData } = await supabase.auth.getSession();
                     
                     if (!sessionData?.session) {
                       console.error(`[shareMoment] ❌ No active session - cannot insert notification`);
@@ -404,13 +381,7 @@ export function createEventStore(storage: StorageAdapter) {
                       const tokenParts = sessionData.session.access_token.split('.');
                       if (tokenParts.length === 3) {
                         const payload = JSON.parse(atob(tokenParts[1]));
-                        console.log(`[shareMoment] JWT payload email claim:`, payload.email || payload['https://supabase.co/user_metadata']?.email || 'NOT FOUND');
-                        console.log(`[shareMoment] JWT payload:`, { 
-                          email: payload.email,
-                          sub: payload.sub,
-                          aud: payload.aud,
-                          role: payload.role 
-                        });
+                        void payload;
                       }
                     } catch (e) {
                       console.warn(`[shareMoment] Could not decode JWT:`, e);
@@ -424,13 +395,10 @@ export function createEventStore(storage: StorageAdapter) {
                       read: false
                     };
                     
-                    console.log(`[shareMoment] Inserting notification:`, notificationData);
-                    console.log(`[shareMoment] Using authenticated session for user:`, sessionData.session.user.email);
                     
                     // Force refresh session to ensure it's valid
                     const { data: refreshedSession } = await supabase.auth.refreshSession();
                     if (refreshedSession?.session) {
-                      console.log(`[shareMoment] Session refreshed successfully`);
                       // Explicitly set the session to ensure it's attached to subsequent requests
                       await supabase.auth.setSession({
                         access_token: refreshedSession.session.access_token,
@@ -440,11 +408,7 @@ export function createEventStore(storage: StorageAdapter) {
                     
                     // Get current session one more time right before insert
                     const { data: finalSession } = await supabase.auth.getSession();
-                    console.log(`[shareMoment] Final session check before insert:`, {
-                      hasSession: !!finalSession?.session,
-                      hasAccessToken: !!finalSession?.session?.access_token,
-                      accessTokenPreview: finalSession?.session?.access_token ? finalSession.session.access_token.substring(0, 20) + '...' : 'Missing'
-                    });
+                    
                     
                     // Try using RPC or raw fetch as fallback? Actually, let's try with explicit headers
                     // But first, let's see if we can verify the request is being made with auth
@@ -465,7 +429,6 @@ export function createEventStore(storage: StorageAdapter) {
                     let alternativeSuccess = false;
                     
                     try {
-                      console.log(`[shareMoment] Trying RPC function create_notification...`);
                       const { data: rpcData, error: rpcError } = await supabase.rpc('create_notification', {
                         p_recipient: notificationData.recipient,
                         p_sender: notificationData.sender,
@@ -478,13 +441,11 @@ export function createEventStore(storage: StorageAdapter) {
                         // Fall back to direct insert
                         throw rpcError;
                       } else {
-                        console.log(`[shareMoment] ✅ RPC function succeeded!`, rpcData);
                         notifData = { id: rpcData, ...notificationData };
                         alternativeSuccess = true;
                       }
                     } catch (rpcErr) {
                       // RPC failed or doesn't exist, try direct insert
-                      console.log(`[shareMoment] RPC not available, trying direct insert...`);
                       const insertResult = await supabase
                         .from("notifications")
                         .insert(notificationData)
@@ -496,7 +457,6 @@ export function createEventStore(storage: StorageAdapter) {
                       
                       // If direct insert fails, try raw fetch with explicit headers
                       if (notifError && notifError.code === '42501') {
-                        console.log(`[shareMoment] Direct insert failed, trying alternative insert method with explicit Authorization header...`);
                         try {
                           // Import supabaseUrl and supabaseAnonKey
                           const { supabaseUrl: url, supabaseAnonKey: key } = await import('../lib/supabase');
@@ -530,7 +490,6 @@ export function createEventStore(storage: StorageAdapter) {
                               } catch {}
                             } else {
                               const data = await response.json();
-                              console.log(`[shareMoment] ✅ Alternative insert succeeded!`, data);
                               alternativeSuccess = true;
                               notifData = Array.isArray(data) ? data[0] : data;
                               notifError = null;
@@ -557,8 +516,6 @@ export function createEventStore(storage: StorageAdapter) {
                         console.error(`[shareMoment] ⚠️ This looks like an RLS policy issue. Run fix_notifications_policies.sql`);
                       }
                     } else {
-                      console.log(`[shareMoment] ✅ Notification created successfully for ${normalizedEmail}`);
-                      console.log(`[shareMoment] Notification data:`, notifData);
                       
                       // Verification: Try to read it back (optional, mainly for debugging)
                       // Note: If SELECT policy blocks this, that's okay - the notification was created
@@ -570,9 +527,8 @@ export function createEventStore(storage: StorageAdapter) {
                       
                       if (verifyError) {
                         console.warn(`[shareMoment] ⚠️ Created notification but SELECT policy may block reading it back:`, verifyError.message);
-                        console.log(`[shareMoment] This is okay - notification was successfully created with ID: ${notifData.id}`);
                       } else {
-                        console.log(`[shareMoment] ✅ Verified notification exists in DB:`, verifyData);
+                        void verifyData;
                       }
                     }
                   } catch (err) {
@@ -582,7 +538,6 @@ export function createEventStore(storage: StorageAdapter) {
                 
                 // Wait for all notifications to be created (don't block if they fail)
                 const results = await Promise.allSettled(notificationPromises);
-                console.log(`[shareMoment] Notification creation results:`, results);
                 
                 // Count successful notifications
                 const successful = results.filter(r => r.status === 'fulfilled').length;
@@ -597,7 +552,6 @@ export function createEventStore(storage: StorageAdapter) {
                     : `⚠️ Sent ${successful} of ${total} invitations. ${total - successful} failed.`
                 };
               } else {
-                console.log("[shareMoment] Skipping notification creation - no sender email or no recipients");
                 return {
                   success: false,
                   count: 0,
@@ -653,72 +607,64 @@ export function createEventStore(storage: StorageAdapter) {
           try {
             // Normalize email to match shared_with format
             const normalizedEmail = userEmail.toLowerCase().trim();
-            console.log("[acceptMoment] Starting accept for moment", momentId, "user", normalizedEmail);
             
             const { data: momentData, error: fetchError } = await supabase
               .from("moments")
-              .select("shared_with_status, user_id, shared_with")
+              .select("*")
               .eq("id", momentId)
               .maybeSingle();
-
             if (fetchError) {
               console.error("[acceptMoment] fetch error:", fetchError);
-              throw new Error(`Failed to fetch moment: ${fetchError.message}`);
+              throw fetchError;
             }
-
             if (!momentData) {
               console.error("[acceptMoment] moment not found");
               throw new Error("Moment not found");
             }
-
+            
+            /*
             console.log("[acceptMoment] Moment data:", {
-              user_id: momentData.user_id,
-              shared_with: momentData.shared_with,
-              shared_with_status: momentData.shared_with_status
+              id: momentData.id,
+              title: momentData.title,
+              status: momentData.status,
+              shared_with_status: momentData.shared_with_status,
+              user_id: momentData.user_id
             });
-
-            // Get current user ID and email
-            const { data: userData } = await supabase.auth.getUser();
-            const currentUserId = userData?.user?.id;
-            const currentUserEmail = userData?.user?.email?.toLowerCase().trim();
+            */
             
+            const { data: currentUser } = await supabase.auth.getUser();
+            /*
             console.log("[acceptMoment] Current user:", {
-              id: currentUserId,
-              email: currentUserEmail,
-              normalizedEmail
+              id: currentUser?.user?.id,
+              email: currentUser?.user?.email
             });
-
-            // Verify user is in shared_with
-            const sharedWithArray = (momentData.shared_with || []).map((e: string) => e.toLowerCase().trim());
-            const isInSharedWith = sharedWithArray.includes(normalizedEmail);
+            */
             
-            if (!isInSharedWith && momentData.user_id !== currentUserId) {
+            const isOwner = momentData.user_id === currentUser?.user?.id;
+            const normalizedEmailLower = normalizedEmail.toLowerCase();
+            const sharedWithArray = (momentData.shared_with || []).map((e: string) => e.toLowerCase().trim());
+            if (!isOwner && !sharedWithArray.includes(normalizedEmailLower)) {
               console.error("[acceptMoment] User not in shared_with array", {
-                normalizedEmail,
+                normalizedEmailLower,
                 sharedWithArray
               });
-              throw new Error("You are not authorized to accept this invitation");
+              throw new Error("User not authorized for this moment");
             }
-
-            const isOwner = momentData.user_id === currentUserId;
-
+            
             const statusMap = momentData.shared_with_status || {};
-            statusMap[normalizedEmail] = "accepted";
-
-            // Only update status if not the owner (owners don't need to accept)
-            const updateData: any = { shared_with_status: statusMap };
-            if (!isOwner) {
-              updateData.status = "active";
-            }
-
-            console.log("[acceptMoment] Updating with:", updateData);
-
+            statusMap[normalizedEmailLower] = 'accepted';
+            const updateData: any = {
+              shared_with_status: statusMap,
+              status: momentData.status === 'pending' ? 'active' : momentData.status
+            };
+            
+            
             const { data: updateResult, error } = await supabase
               .from("moments")
               .update(updateData)
               .eq("id", momentId)
-              .select();
-
+              .select()
+              .single();
             if (error) {
               console.error("[acceptMoment] update error:", error);
               console.error("[acceptMoment] Error details:", {
@@ -727,19 +673,13 @@ export function createEventStore(storage: StorageAdapter) {
                 details: error.details,
                 hint: error.hint
               });
-              throw new Error(`Failed to update moment: ${error.message}`);
-            } else {
-              console.log("[acceptMoment] Successfully accepted by", normalizedEmail);
-              console.log("[acceptMoment] Update result:", updateResult);
-              // Refresh moments
-              const { data: userData2 } = await supabase.auth.getUser();
-              if (userData2?.user?.id) {
-                await get().fetchMoments(userData2.user.id);
-              }
+              throw error;
             }
-          } catch (err: any) {
+            
+            
+          } catch (err) {
             console.error("[acceptMoment] unexpected error:", err);
-            throw err; // Re-throw so UI can handle it
+            throw err;
           }
         },
         declineMoment: async (momentId: string, userEmail: string) => {
@@ -750,57 +690,41 @@ export function createEventStore(storage: StorageAdapter) {
           try {
             // Normalize email to match shared_with format
             const normalizedEmail = userEmail.toLowerCase().trim();
-            console.log("[declineMoment] Starting decline for moment", momentId, "user", normalizedEmail);
             
             const { data: momentData, error: fetchError } = await supabase
               .from("moments")
-              .select("shared_with_status, user_id, shared_with")
+              .select("*")
               .eq("id", momentId)
               .maybeSingle();
-
             if (fetchError) {
               console.error("[declineMoment] fetch error:", fetchError);
-              throw new Error(`Failed to fetch moment: ${fetchError.message}`);
+              throw fetchError;
             }
-
             if (!momentData) {
               console.error("[declineMoment] moment not found");
               throw new Error("Moment not found");
             }
-
+            
+            /*
             console.log("[declineMoment] Moment data:", {
-              user_id: momentData.user_id,
-              shared_with: momentData.shared_with,
-              shared_with_status: momentData.shared_with_status
+              id: momentData.id,
+              title: momentData.title,
+              status: momentData.status,
+              shared_with_status: momentData.shared_with_status,
+              user_id: momentData.user_id
             });
-
-            // Get current user
-            const { data: userData } = await supabase.auth.getUser();
-            const currentUserEmail = userData?.user?.email?.toLowerCase().trim();
+            */
             
-            // Verify user is in shared_with
-            const sharedWithArray = (momentData.shared_with || []).map((e: string) => e.toLowerCase().trim());
-            const isInSharedWith = sharedWithArray.includes(normalizedEmail);
-            
-            if (!isInSharedWith && momentData.user_id !== userData?.user?.id) {
-              console.error("[declineMoment] User not in shared_with array", {
-                normalizedEmail,
-                sharedWithArray
-              });
-              throw new Error("You are not authorized to decline this invitation");
-            }
-
             const statusMap = momentData.shared_with_status || {};
-            statusMap[normalizedEmail] = "declined";
-
-            console.log("[declineMoment] Updating with:", { shared_with_status: statusMap });
-
+            statusMap[normalizedEmail] = 'declined';
+            
+            
             const { data: updateResult, error } = await supabase
               .from("moments")
               .update({ shared_with_status: statusMap })
               .eq("id", momentId)
-              .select();
-
+              .select()
+              .single();
             if (error) {
               console.error("[declineMoment] update error:", error);
               console.error("[declineMoment] Error details:", {
@@ -809,19 +733,13 @@ export function createEventStore(storage: StorageAdapter) {
                 details: error.details,
                 hint: error.hint
               });
-              throw new Error(`Failed to update moment: ${error.message}`);
-            } else {
-              console.log("[declineMoment] Successfully declined by", normalizedEmail);
-              console.log("[declineMoment] Update result:", updateResult);
-              // Refresh moments - declined moments will be filtered out
-              const { data: userData2 } = await supabase.auth.getUser();
-              if (userData2?.user?.id) {
-                await get().fetchMoments(userData2.user.id);
-              }
+              throw error;
             }
-          } catch (err: any) {
+            
+            
+          } catch (err) {
             console.error("[declineMoment] unexpected error:", err);
-            throw err; // Re-throw so UI can handle it
+            throw err;
           }
         },
         subscribeRealtime: () => {

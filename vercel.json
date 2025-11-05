@@ -3,7 +3,10 @@
   "name": "my-moments",
   "buildCommand": "pnpm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
 }
 
 

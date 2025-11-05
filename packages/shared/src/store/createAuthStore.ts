@@ -86,26 +86,7 @@ export const useAuthStore = create<AuthState>()(
             throw new Error(errorMessage);
           }
 
-          // If no error but also NO session, check if user already exists
-          // (Supabase allows duplicate signups with auto-confirm enabled)
-          if (!data.session) {
-            // Try to sign in to check if user exists
-            const { error: signInError } = await supabase.auth.signInWithPassword({
-              email: email.trim().toLowerCase(),
-              password,
-            });
-            
-            // User exists (whether password matches or not)
-            if (signInError?.message.includes("Invalid login credentials") || !signInError) {
-              // Sign out the user we just tried to sign in
-              await supabase.auth.signOut();
-              set({ loading: false, error: "This email is already registered. Please log in instead.", user: null });
-              throw new Error("This email is already registered. Please log in instead.");
-            }
-          }
-
-          // Handle email confirmation settings
-          // If confirmations are ON, there may be NO session yet
+          // Handle email confirmation: session may be null. Treat as success without redirect.
           const sessionUser = data.session?.user ?? data.user ?? null;
           set({ user: sessionUser, loading: false, error: null });
         } catch (err: any) {

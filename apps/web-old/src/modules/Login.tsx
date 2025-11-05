@@ -9,13 +9,19 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [signupSuccess, setSignupSuccess] = useState(false);
+  const [signupEmail, setSignupEmail] = useState("");
+  // Derive a real authenticated session indicator
+  // If the store exposed session, prefer that; otherwise infer from user.email_confirmed_at
+  const session = !!(user && (user as any).email_confirmed_at);
 
   // ✅ Automatically redirect when user is set (only on successful auth, no errors)
   useEffect(() => {
-    if (user && !loading && !error) {
+    // Redirect only when there is a real session (not just a user object)
+    if (session && isLogin && !signupSuccess && !loading && !error) {
       navigate("/");
     }
-  }, [user, loading, error, navigate]);
+  }, [session, isLogin, signupSuccess, loading, error, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,13 +29,43 @@ export default function Login() {
     if (isLogin) {
       await signIn(email, password);
     } else {
-      await signUp(email, password, name);
+      try {
+        await signUp(email, password, name);
+        // Do NOT wait for a session and do NOT navigate
+        setSignupEmail(email.trim().toLowerCase());
+        setSignupSuccess(true);
+      } catch {
+        setSignupSuccess(false);
+      }
     }
     // Don't catch errors here - let them display in the UI
   };
 
+  // Show verify-email screen immediately after a successful signup
+  if (signupSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 px-4">
+        <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-sm mx-auto text-center">
+          <h2 className="text-xl font-semibold mb-2">Confirm your email</h2>
+          <p className="text-gray-600 mb-4">
+            We sent a verification link to <strong>{signupEmail}</strong>.
+            <br />
+            Please check your inbox and verify your account.
+          </p>
+
+          <button
+            onClick={() => { setSignupSuccess(false); setIsLogin(true); }}
+            className="mt-3 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+          >
+            Return to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Show welcome screen if user is already logged in
-  if (user) {
+  if (session && isLogin) {
     const displayName = user?.user_metadata?.display_name?.trim() || user?.user_metadata?.name?.trim() || user?.email?.split("@")[0] || "User";
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
@@ -54,87 +90,98 @@ export default function Login() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 px-4">
       <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-sm mx-auto">
-        <h1 className="text-xl font-semibold mb-4 text-center text-gray-800">
-          {isLogin ? "Welcome back" : "Create your account"}
-        </h1>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          {!isLogin && (
-            <input
-              type="text"
-              placeholder="Your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="border border-gray-300 px-3 py-2 rounded text-sm"
-            />
-          )}
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="border border-gray-300 px-3 py-2 rounded text-sm w-full"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="border border-gray-300 px-3 py-2 rounded text-sm w-full"
-          />
-          <button
-            disabled={loading}
-            className="bg-blue-500 text-white py-2 min-h-[44px] rounded hover:bg-blue-600 transition w-full"
-          >
-            {isLogin ? "Sign In" : "Sign Up"}
-          </button>
-        </form>
+        {signupSuccess ? (
+          <div className="p-6 text-center">
+            <h2 className="text-xl font-semibold mb-2">Confirm your email</h2>
+            <p className="text-gray-600">
+              We sent a confirmation link to {signupEmail}. Please verify your account, then come back to log in.
+            </p>
+          </div>
+        ) : (
+          <>
+            <h1 className="text-xl font-semibold mb-4 text-center text-gray-800">
+              {isLogin ? "Welcome back" : "Create your account"}
+            </h1>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              {!isLogin && (
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="border border-gray-300 px-3 py-2 rounded text-sm"
+                />
+              )}
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="border border-gray-300 px-3 py-2 rounded text-sm w-full"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="border border-gray-300 px-3 py-2 rounded text-sm w-full"
+              />
+              <button
+                disabled={loading}
+                className="bg-blue-500 text-white py-2 min-h-[44px] rounded hover:bg-blue-600 transition w-full"
+              >
+                {isLogin ? "Sign In" : "Sign Up"}
+              </button>
+            </form>
 
-        {error && (
-          <p className="text-red-600 text-sm text-center mt-2">
-            {error.includes("already registered")
-              ? "This email is already registered. Please log in instead."
-              : error.includes("Invalid login credentials")
-              ? "Invalid credentials. Please try again."
-              : error}
-          </p>
+            {error && (
+              <p className="text-red-600 text-sm text-center mt-2">
+                {error.includes("already registered")
+                  ? "This email is already registered. Please log in instead."
+                  : error.includes("Invalid login credentials")
+                  ? "Invalid credentials. Please try again."
+                  : error}
+              </p>
+            )}
+
+            <p className="text-sm text-gray-600 mt-2 text-center">
+              <button
+                type="button"
+                onClick={() => navigate("/reset-password")}
+                className="text-blue-600 hover:underline"
+              >
+                Forgot password?
+              </button>
+            </p>
+
+            <p className="text-sm text-gray-600 mt-3 text-center">
+              {isLogin ? (
+                <>
+                  Don't have an account?{" "}
+                  <button
+                    onClick={() => setIsLogin(false)}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Sign up
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <button
+                    onClick={() => setIsLogin(true)}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Log in
+                  </button>
+                </>
+              )}
+            </p>
+          </>
         )}
-
-        <p className="text-sm text-gray-600 mt-2 text-center">
-          <button
-            type="button"
-            onClick={() => navigate("/reset-password")}
-            className="text-blue-600 hover:underline"
-          >
-            Forgot password?
-          </button>
-        </p>
-
-        <p className="text-sm text-gray-600 mt-3 text-center">
-          {isLogin ? (
-            <>
-              Don't have an account?{" "}
-              <button
-                onClick={() => setIsLogin(false)}
-                className="text-blue-600 hover:underline"
-              >
-                Sign up
-              </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{" "}
-              <button
-                onClick={() => setIsLogin(true)}
-                className="text-blue-600 hover:underline"
-              >
-                Log in
-              </button>
-            </>
-          )}
-        </p>
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ export type Task = {
   id: string;
   text: string;
   owner?: string;
-  completionDate?: string; // ISO string
+  completionDate?: string | null; // ISO string or null when unchecked
   done: boolean;
   notified?: boolean; // Track if reminder has been sent
   reminderEnabled?: boolean; // Control whether reminders are active

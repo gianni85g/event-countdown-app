@@ -103,27 +103,19 @@ export function Home() {
     }
     
     setLoading(true);
-    console.log("[Home] User detected, fetching moments & tasks...", user.id);
     
     // Fetch both moments and tasks
     Promise.all([
       fetchMoments(user.id),
       fetchTasks ? fetchTasks(user.id) : Promise.resolve()
     ])
-      .then(() => {
-        console.log("[Home] Moments and tasks loaded successfully");
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("[Home] Error fetching data:", err);
-        setLoading(false);
-      });
+      .then(() => setLoading(false))
+      .catch(() => setLoading(false));
   }, [user?.id]);
   
   // ✅ Fallback: If moments loaded but tasks empty, retry once
   useEffect(() => {
     if (user?.id && moments.length > 0 && tasks.length === 0 && !loading && fetchTasks) {
-      console.log("[Home] Moments loaded but tasks empty — refetching tasks...");
       fetchTasks(user.id);
     }
   }, [user?.id, moments.length, tasks.length, loading, fetchTasks]);
@@ -189,7 +181,6 @@ export function Home() {
       const isPastMoment = event ? ((event as any).isPast || new Date(event.date) < today) : false;
       return !isPastMoment && !(t.done || t.completed);
     });
-    console.log("[Home] Computing upcomingTasks (active moments only), total:", active.length);
     return active
       .sort((a: any, b: any) => {
         if (!a.completionDate) return 1;
@@ -242,7 +233,12 @@ export function Home() {
     return visibleEvents
       .filter((m) => !isPast(m))
       .slice()
-      .sort((a, b) => getEventTime(a) - getEventTime(b));
+      .sort((a: any, b: any) => {
+        const ap = (a as any).status === 'pending' ? 0 : 1;
+        const bp = (b as any).status === 'pending' ? 0 : 1;
+        if (ap !== bp) return ap - bp; // pending first
+        return getEventTime(a) - getEventTime(b); // then soonest first
+      });
   }, [visibleEvents]);
   
   // Unread notifications now handled in App-level UI

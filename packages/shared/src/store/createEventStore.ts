@@ -1083,7 +1083,7 @@ export function createEventStore(storage: StorageAdapter) {
           const task = event?.tasks.find((t) => t.id === taskId);
           if (!task) return;
           const nextDone = !Boolean(task.done);
-          const nextCompletionDate = nextDone ? new Date().toISOString() : null;
+          const nextCompletionDate = nextDone ? new Date().toISOString() : undefined;
 
           // Log intent
           console.log("[toggleTask] local flip", { taskId, eventId, nextDone, nextCompletionDate });
@@ -1099,7 +1099,7 @@ export function createEventStore(storage: StorageAdapter) {
                         ? {
                             ...t,
                             done: nextDone,
-                            completionDate: nextCompletionDate,
+                    completionDate: nextCompletionDate,
                           }
                         : t
                     )
@@ -1116,7 +1116,7 @@ export function createEventStore(storage: StorageAdapter) {
                   .from("preparations")
                   .update({
                     done: nextDone,
-                    completion_date: nextCompletionDate,
+                    completion_date: nextDone ? nextCompletionDate! : null,
                   })
                   .eq("id", taskId)
                   .select("id, done, completion_date")
@@ -1134,7 +1134,7 @@ export function createEventStore(storage: StorageAdapter) {
                                 ? {
                                     ...t,
                                     done: !nextDone,
-                                    completionDate: !nextDone ? task.completionDate ?? null : null,
+                                    completionDate: !nextDone ? task.completionDate ?? undefined : undefined,
                                   }
                                 : t
                             )
@@ -1178,7 +1178,7 @@ export function createEventStore(storage: StorageAdapter) {
                               ? {
                                   ...t,
                                   done: !nextDone,
-                                  completionDate: !nextDone ? task.completionDate ?? null : null,
+                                  completionDate: !nextDone ? task.completionDate ?? undefined : undefined,
                                 }
                               : t
                           )

@@ -26,18 +26,15 @@ export function App() {
         // When a new user logs in (and it's different from last user), reset local data
         // Only reset if lastUser exists - don't reset on first load with same user
         if (currentUser && lastUser && currentUser !== lastUser) {
-            console.log("[Auth] User switch detected, resetting store");
             resetStore();
             localStorage.setItem("lastUserEmail", currentUser);
         }
         else if (currentUser && !lastUser) {
             // First time logging in - just set the user email, don't reset
-            console.log("[Auth] First login for this session, setting user email");
             localStorage.setItem("lastUserEmail", currentUser);
         }
         // When user logs out, clear store and cache
         if (!currentUser && lastUser) {
-            console.log("[Auth] User logged out, clearing store");
             resetStore();
             localStorage.removeItem("lastUserEmail");
             localStorage.removeItem("moments-store");

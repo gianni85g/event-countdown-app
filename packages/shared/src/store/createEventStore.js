@@ -982,7 +982,7 @@ export function createEventStore(storage) {
             if (!task)
                 return;
             const nextDone = !Boolean(task.done);
-            const nextCompletionDate = nextDone ? new Date().toISOString() : null;
+            const nextCompletionDate = nextDone ? new Date().toISOString() : undefined;
             // Log intent
             console.log("[toggleTask] local flip", { taskId, eventId, nextDone, nextCompletionDate });
             // Optimistic update
@@ -1008,7 +1008,7 @@ export function createEventStore(storage) {
                             .from("preparations")
                             .update({
                             done: nextDone,
-                            completion_date: nextCompletionDate,
+                            completion_date: nextDone ? nextCompletionDate : null,
                         })
                             .eq("id", taskId)
                             .select("id, done, completion_date")
@@ -1024,7 +1024,7 @@ export function createEventStore(storage) {
                                             ? {
                                                 ...t,
                                                 done: !nextDone,
-                                                completionDate: !nextDone ? task.completionDate ?? null : null,
+                                                completionDate: !nextDone ? task.completionDate ?? undefined : undefined,
                                             }
                                             : t)
                                     }
@@ -1064,7 +1064,7 @@ export function createEventStore(storage) {
                                         ? {
                                             ...t,
                                             done: !nextDone,
-                                            completionDate: !nextDone ? task.completionDate ?? null : null,
+                                            completionDate: !nextDone ? task.completionDate ?? undefined : undefined,
                                         }
                                         : t)
                                 }
